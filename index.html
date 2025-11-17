@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<!This tool is under the unlicense.>
+<!See unlicense.org for more>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenLabor</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>OpenLabor</h1>
+            <p>Multi-Person, Multi-Source, Labor Tracking & Analytics</p>
+        </header>
+
+        <main>
+            <section class="input-section">
+                <h2>Add Time Entry</h2>
+                <form id="timeEntryForm">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" required>
+                            <option value="">Select Category</option>
+                            <option value="staff">Staff</option>
+                            <option value="contractor">Contractor</option>
+                            <option value="temp">Temp</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clockIn">Clock In</label>
+                        <input type="time" id="clockIn" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clockOut">Clock Out</label>
+                        <input type="time" id="clockOut" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="breakTime">Break (minutes)</label>
+                        <input type="number" id="breakTime" min="0" step="15" value="0">
+                    </div>
+
+                    <button type="submit" class="btn">Add Entry</button>
+                </form>
+            </section>
+
+            <section class="entries-section">
+                <h2>Time Entries</h2>
+                <div class="entries-container">
+                    <table id="entriesTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Clock In</th>
+                                <th>Clock Out</th>
+                                <th>Break</th>
+                                <th>Total Hours</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="entriesBody">
+                            <!-- Entries will be added here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="summary-section">
+                <h2>Hours by Category</h2>
+                <div id="categoryTotals" class="category-totals">
+                    <!-- Category totals will be displayed here -->
+                </div>
+            </section>
+
+            <section class="hourly-section">
+                <h2>Hour-over-Hour Distribution</h2>
+                <div id="hourlyData" class="hourly-container">
+                    <!-- Hourly data will be displayed here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
