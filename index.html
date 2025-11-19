@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <!This tool is under the unlicense.>
 <!See unlicense.org for more>
-
-<!Soure Code: https://github.com/Garrett96/openlabor>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -57,6 +55,20 @@
                 </form>
             </section>
 
+            <section class="overall-summary-section">
+                <h2>Overall Summary</h2>
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h3>Total Hours</h3>
+                        <div id="totalHours" class="summary-value">0 hrs</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Headcount Tally</h3>
+                        <div id="headcountTally" class="summary-value">0</div>
+                    </div>
+                </div>
+            </section>
+
             <section class="entries-section">
                 <h2>Time Entries</h2>
                 <div class="entries-container">
@@ -73,7 +85,6 @@
                             </tr>
                         </thead>
                         <tbody id="entriesBody">
-                            <!-- Entries will be added here dynamically -->
                         </tbody>
                     </table>
                 </div>
@@ -82,14 +93,12 @@
             <section class="summary-section">
                 <h2>Hours by Category</h2>
                 <div id="categoryTotals" class="category-totals">
-                    <!-- Category totals will be displayed here -->
                 </div>
             </section>
 
             <section class="hourly-section">
                 <h2>Hour-over-Hour Distribution</h2>
                 <div id="hourlyData" class="hourly-container">
-                    <!-- Hourly data will be displayed here -->
                 </div>
             </section>
         </main>
