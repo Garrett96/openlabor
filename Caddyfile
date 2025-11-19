@@ -1,0 +1,12 @@
+{
+	admin 127.0.0.1:2020
+	http_port 8080
+}
+
+openlabor.io {
+	reverse_proxy 127.0.0.1:5725
+}
+
+www.openlabor.io {
+	reverse_proxy 127.0.0.1:5725
+}
