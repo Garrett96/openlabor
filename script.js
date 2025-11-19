@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const entriesBody = document.getElementById('entriesBody');
     const categoryTotals = document.getElementById('categoryTotals');
     const hourlyData = document.getElementById('hourlyData');
+    const exportBtn = document.getElementById('exportBtn');
 
     const totalHoursEl = document.getElementById('totalHours');
     const headcountTallyEl = document.getElementById('headcountTally');
@@ -45,6 +46,10 @@ document.addEventListener('DOMContentLoaded', function() {
         updateOverallSummary();
 
         form.reset();
+    });
+
+    exportBtn.addEventListener('click', function() {
+        exportToCSV();
     });
 
     function calculateHours(clockIn, clockOut, breakTimeMinutes) {
@@ -223,6 +228,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const uniqueNames = new Set(entries.map(entry => entry.name));
         headcountTallyEl.textContent = uniqueNames.size;
+    }
+
+    function exportToCSV() {
+        if (entries.length === 0) {
+            alert('No data to export');
+            return;
+        }
+
+        const headers = ['Name', 'Category', 'Clock In', 'Clock Out', 'Break (minutes)', 'Total Hours'];
+
+        const rows = entries.map(entry => [
+            entry.name,
+            entry.category,
+            entry.clockIn,
+            entry.clockOut,
+            entry.breakTime,
+            entry.totalHours
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+
+        const filename = `openlabor-export-${year}-${month}-${day}-${hours}-${minutes}.csv`;
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     function saveEntries() {
