@@ -1,3 +1,3 @@
 # OpenLabor
 
-Open-source labor analytics for teams. Simple self hosting with rocket or caddy.
+Open-source labor analytics for teams. Simple self hosting with rocket+caddy.
