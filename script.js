@@ -1,14 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // --- Migration & Initialization ---
 
-    // 1. Check for old data format and update categories
     let rawEntries = localStorage.getItem('tempusEntries');
     if (rawEntries) {
         let parsedEntries = JSON.parse(rawEntries);
         let needsSave = false;
 
         parsedEntries.forEach(entry => {
-            // If category doesn't have an emoji, it's old data. Map it.
             if (entry.category && !entry.category.match(/[\u{1F300}-\u{1F9FF}]/u)) {
                 needsSave = true;
                 switch(entry.category.toLowerCase()) {
@@ -26,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 2. Check for old settings format
     let rawSettings = localStorage.getItem('tempusSettings');
     let settings;
 
@@ -42,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (rawSettings) {
         settings = JSON.parse(rawSettings);
-        // If the loaded settings don't have the new emoji keys, reset to defaults
         if (!settings.wages["Staff🔶"]) {
             console.log("Old settings format detected. Resetting to defaults.");
             settings = defaultSettings;
@@ -54,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let entries = JSON.parse(localStorage.getItem('tempusEntries')) || [];
 
-    // DOM Elements
     const form = document.getElementById('timeEntryForm');
     const entriesBody = document.getElementById('entriesBody');
     const categoryTotals = document.getElementById('categoryTotals');
@@ -65,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const headcountTallyEl = document.getElementById('headcountTally');
     const totalCostEl = document.getElementById('totalCost');
 
-    // Pipeline Elements
     const exportJsonBtn = document.getElementById('exportJsonBtn');
     const importJsonInput = document.getElementById('importJsonInput');
     const webhookUrlInput = document.getElementById('webhookUrl');
@@ -82,16 +75,13 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     const otMultiplierInput = document.getElementById('overtimeMultiplier');
 
-    // Initialize UI
     loadSettingsToUI();
     renderEntries();
     updateCategoryTotals();
     updateHourlyData();
     updateOverallSummary();
 
-    // --- Event Listeners ---
 
-    // Config Listeners
     Object.keys(wageInputs).forEach(key => {
         if(wageInputs[key]) {
             wageInputs[key].addEventListener('change', saveSettingsFromUI);
@@ -200,7 +190,6 @@ document.addEventListener('DOMContentLoaded', function() {
     webhookUrlInput.addEventListener('change', () => localStorage.setItem('tempusWebhookUrl', webhookUrlInput.value));
     enablePushCheckbox.addEventListener('change', () => localStorage.setItem('tempusEnablePush', enablePushCheckbox.checked));
 
-    // --- Core Logic Functions ---
 
     function loadSettingsToUI() {
         Object.keys(wageInputs).forEach(key => {
@@ -227,10 +216,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function calculateEntryCost(entry) {
         if (!entry.clockOut) return 0;
 
-        // Fallback logic just in case
         let rate = settings.wages[entry.category];
         if (rate === undefined) {
-            // Check if it matches a stripped version (migration safety)
             const catLower = entry.category.toLowerCase();
             if (catLower.includes('staff')) rate = settings.wages["Staff🔶"];
             else if (catLower.includes('temp')) rate = settings.wages["Temp🔷"];
@@ -439,8 +426,6 @@ document.addEventListener('DOMContentLoaded', function() {
         totalCostEl.textContent = `$${totalCost.toFixed(2)}`;
     }
 
-    // --- Export Functions ---
-
     function exportToCSV() {
         if (entries.length === 0) {
             alert('No data to export');
@@ -538,8 +523,6 @@ document.addEventListener('DOMContentLoaded', function() {
         reader.readAsText(file);
         e.target.value = '';
     }
-
-    // --- Pipeline Functions ---
 
     function pushEntryToPipeline(entry) {
         const url = webhookUrlInput.value;
