@@ -7,8 +7,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const hourlyData = document.getElementById('hourlyData');
     const exportBtn = document.getElementById('exportBtn');
 
+    const exportJsonBtn = document.getElementById('exportJsonBtn');
+    const importJsonInput = document.getElementById('importJsonInput');
+    const webhookUrlInput = document.getElementById('webhookUrl');
+    const enablePushCheckbox = document.getElementById('enablePush');
+    const testPushBtn = document.getElementById('testPushBtn');
+    const pushStatusSpan = document.getElementById('pushStatus');
+
     const totalHoursEl = document.getElementById('totalHours');
     const headcountTallyEl = document.getElementById('headcountTally');
+
+    webhookUrlInput.value = localStorage.getItem('tempusWebhookUrl') || '';
+    enablePushCheckbox.checked = localStorage.getItem('tempusEnablePush') === 'true';
 
     renderEntries();
     updateCategoryTotals();
@@ -39,6 +49,10 @@ document.addEventListener('DOMContentLoaded', function() {
         entries.push(entry);
         saveEntries();
 
+        if (clockOut && enablePushCheckbox.checked && webhookUrlInput.value) {
+            pushEntryToPipeline(entry);
+        }
+
         renderEntries();
         updateCategoryTotals();
         updateHourlyData();
@@ -48,8 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     entriesBody.addEventListener('click', function(e) {
+        const id = parseInt(e.target.getAttribute('data-id'));
+        const entryIndex = entries.findIndex(entry => entry.id === id);
+
         if (e.target.classList.contains('delete-btn')) {
-            const id = parseInt(e.target.getAttribute('data-id'));
             entries = entries.filter(entry => entry.id !== id);
             saveEntries();
             renderEntries();
@@ -59,7 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (e.target.classList.contains('save-btn')) {
-            const id = parseInt(e.target.getAttribute('data-id'));
             const row = e.target.closest('tr');
             const clockOutInput = row.querySelector('.edit-clockout');
             const breakInput = row.querySelector('.edit-break');
@@ -72,13 +87,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const entryIndex = entries.findIndex(entry => entry.id === id);
             if (entryIndex !== -1) {
                 entries[entryIndex].clockOut = newClockOut;
                 entries[entryIndex].breakTime = newBreak;
                 entries[entryIndex].totalHours = calculateHours(entries[entryIndex].clockIn, newClockOut, newBreak);
 
                 saveEntries();
+
+                if (enablePushCheckbox.checked && webhookUrlInput.value) {
+                    pushEntryToPipeline(entries[entryIndex]);
+                }
+
                 renderEntries();
                 updateCategoryTotals();
                 updateHourlyData();
@@ -87,13 +106,109 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    exportBtn.addEventListener('click', function() {
-        exportToCSV();
+    exportBtn.addEventListener('click', exportToCSV);
+
+    webhookUrlInput.addEventListener('change', () => {
+        localStorage.setItem('tempusWebhookUrl', webhookUrlInput.value);
     });
+    enablePushCheckbox.addEventListener('change', () => {
+        localStorage.setItem('tempusEnablePush', enablePushCheckbox.checked);
+    });
+
+    exportJsonBtn.addEventListener('click', exportToJSON);
+    importJsonInput.addEventListener('change', importFromJSON);
+    testPushBtn.addEventListener('click', testPipeline);
+
+    function pushEntryToPipeline(entry) {
+        const url = webhookUrlInput.value;
+        if (!url) return;
+
+        fetch(url, {
+            method: 'POST',
+            mode: 'cors', // Important for cross-origin requests
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(entry)
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log('Pipeline push successful');
+                showStatus('Sent!', true);
+            } else {
+                console.error('Pipeline push failed', response.status);
+                showStatus(`Error ${response.status}`, false);
+            }
+        })
+        .catch(err => {
+            console.error('Pipeline push error', err);
+            showStatus('Connection Failed', false);
+        });
+    }
+
+    function testPipeline() {
+        if (!webhookUrlInput.value) {
+            alert("Please enter an endpoint URL first.");
+            return;
+        }
+        // test object
+        pushEntryToPipeline({
+            test: true,
+            message: "OpenLabor connection test",
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    function showStatus(msg, success) {
+        pushStatusSpan.textContent = msg;
+        pushStatusSpan.className = success ? 'status-success' : 'status-error';
+        setTimeout(() => { pushStatusSpan.textContent = ''; }, 3000);
+    }
+
+    function exportToJSON() {
+        const dataStr = JSON.stringify(entries, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `openlabor-backup-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function importFromJSON(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                if (Array.isArray(importedData)) {
+                    if (confirm(`Import ${importedData.length} entries? This will replace current data.`)) {
+                        entries = importedData;
+                        saveEntries();
+                        renderEntries();
+                        updateCategoryTotals();
+                        updateHourlyData();
+                        updateOverallSummary();
+                        alert("Data imported successfully.");
+                    }
+                } else {
+                    alert("Invalid JSON format.");
+                }
+            } catch (err) {
+                alert("Error parsing JSON file.");
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    }
 
     function calculateHours(clockIn, clockOut, breakTimeMinutes) {
         if (!clockIn || !clockOut) return 0;
-
         const [inHours, inMinutes] = clockIn.split(':').map(Number);
         const [outHours, outMinutes] = clockOut.split(':').map(Number);
 
@@ -112,7 +227,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function calculateHourlyDistribution(clockIn, clockOut, breakTimeMinutes) {
         if (!clockIn || !clockOut) return new Array(24).fill(0);
-
         const [inHours, inMinutes] = clockIn.split(':').map(Number);
         const [outHours, outMinutes] = clockOut.split(':').map(Number);
 
@@ -156,48 +270,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         entries.forEach(entry => {
             const row = document.createElement('tr');
-
             const isActive = !entry.clockOut;
-            if (isActive) {
-                row.classList.add('active-shift');
-            }
+            if (isActive) row.classList.add('active-shift');
 
-            let clockOutCellContent;
-            if (isActive) {
-                clockOutCellContent = `
-                <input type="time" class="edit-clockout table-time-input" value="${entry.clockOut || ''}">
-                `;
-            } else {
-                clockOutCellContent = entry.clockOut;
-            }
+            let clockOutCellContent = isActive
+            ? `<input type="time" class="edit-clockout table-time-input" value="${entry.clockOut || ''}">`
+            : entry.clockOut;
 
-            let breakCellContent;
-            if (isActive) {
-                breakCellContent = `
-                <input type="number" class="edit-break table-time-input" value="${entry.breakTime}" min="0" step="15" style="width: 60px;">
-                `;
-            } else {
-                breakCellContent = `${entry.breakTime} min`;
-            }
+            let breakCellContent = isActive
+            ? `<input type="number" class="edit-break table-time-input" value="${entry.breakTime}" min="0" step="15" style="width: 60px;">`
+            : `${entry.breakTime} min`;
 
-            let hoursCellContent;
-            if (isActive) {
-                hoursCellContent = `<span style="font-style: italic; color: #666;">Active</span>`;
-            } else {
-                hoursCellContent = `${entry.totalHours} hrs`;
-            }
+            let hoursCellContent = isActive
+            ? `<span style="font-style: italic; color: #666;">Active</span>`
+            : `${entry.totalHours} hrs`;
 
-            let actionsCellContent;
-            if (isActive) {
-                actionsCellContent = `
-                <button class="save-btn" data-id="${entry.id}">Save</button>
-                <button class="delete-btn" data-id="${entry.id}">Delete</button>
-                `;
-            } else {
-                actionsCellContent = `
-                <button class="delete-btn" data-id="${entry.id}">Delete</button>
-                `;
-            }
+            let actionsCellContent = isActive
+            ? `<button class="save-btn" data-id="${entry.id}">Save</button> <button class="delete-btn" data-id="${entry.id}">Delete</button>`
+            : `<button class="delete-btn" data-id="${entry.id}">Delete</button>`;
 
             row.innerHTML = `
             <td>${entry.name}</td>
@@ -214,28 +304,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateCategoryTotals() {
         const totals = {};
-        entries.forEach(entry => {
-            if (entry.clockOut) {
-                if (!totals[entry.category]) {
-                    totals[entry.category] = 0;
-                }
-                totals[entry.category] += entry.totalHours;
-            }
+        const completedEntries = entries.filter(e => e.clockOut);
+
+        completedEntries.forEach(entry => {
+            if (!totals[entry.category]) totals[entry.category] = 0;
+            totals[entry.category] += entry.totalHours;
         });
 
         const grandTotalHours = Object.values(totals).reduce((sum, hours) => sum + hours, 0);
-
         categoryTotals.innerHTML = '';
 
         if (Object.keys(totals).length === 0) {
-            categoryTotals.innerHTML = '<p style="color: #666;">No completed entries to calculate.</p>';
+            categoryTotals.innerHTML = '<p style="color: #666;">No timesheets added.</p>';
             return;
         }
 
         Object.keys(totals).forEach(category => {
             const card = document.createElement('div');
             card.className = 'category-card';
-
             const categoryHours = totals[category];
             const percentage = grandTotalHours > 0 ? ((categoryHours / grandTotalHours) * 100).toFixed(1) : 0;
 
@@ -250,61 +336,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateHourlyData() {
         const hourlyTotals = new Array(24).fill(0);
-
         const completedEntries = entries.filter(e => e.clockOut);
 
         completedEntries.forEach(entry => {
             const distribution = calculateHourlyDistribution(entry.clockIn, entry.clockOut, entry.breakTime);
-            for (let i = 0; i < 24; i++) {
-                hourlyTotals[i] += distribution[i];
-            }
+            for (let i = 0; i < 24; i++) hourlyTotals[i] += distribution[i];
         });
 
-        hourlyData.innerHTML = '';
-        const table = document.createElement('table');
-        table.className = 'hourly-table';
+            hourlyData.innerHTML = '';
+            const table = document.createElement('table');
+            table.className = 'hourly-table';
 
-        const header = document.createElement('thead');
-        header.innerHTML = `
-        <tr>
-        <th>Time Period</th>
-        <th>Total Hours</th>
-        <th>Bar Chart</th>
-        </tr>
-        `;
-        table.appendChild(header);
+            const header = document.createElement('thead');
+            header.innerHTML = `<tr><th>Time Period</th><th>Total Hours</th><th>Bar Chart</th></tr>`;
+            table.appendChild(header);
 
-        const body = document.createElement('tbody');
-        const maxHours = Math.max(...hourlyTotals, 1);
+            const body = document.createElement('tbody');
+            const maxHours = Math.max(...hourlyTotals, 1);
 
-        for (let i = 0; i < 24; i++) {
-            const row = document.createElement('tr');
-            const startHour = i;
-            const endHour = (i + 1) % 24;
+            for (let i = 0; i < 24; i++) {
+                const row = document.createElement('tr');
+                const startHour = i;
+                const endHour = (i + 1) % 24;
+                const startPeriod = startHour < 12 ? 'AM' : 'PM';
+                const endPeriod = endHour < 12 ? 'AM' : 'PM';
+                const formattedStartHour = startHour === 0 ? 12 : (startHour > 12 ? startHour - 12 : startHour);
+                const formattedEndHour = endHour === 0 ? 12 : (endHour > 12 ? endHour - 12 : endHour);
 
-            const formattedStartHour = startHour === 0 ? 12 : (startHour > 12 ? startHour - 12 : startHour);
-            const formattedEndHour = endHour === 0 ? 12 : (endHour > 12 ? endHour - 12 : endHour);
+                const timePeriod = `${formattedStartHour}:00 ${startPeriod} - ${formattedEndHour}:00 ${endPeriod}`;
+                const barWidth = (hourlyTotals[i] / maxHours) * 100;
 
-            const startPeriod = startHour < 12 ? 'AM' : 'PM';
-            const endPeriod = endHour < 12 ? 'AM' : 'PM';
+                row.innerHTML = `
+                <td>${timePeriod}</td>
+                <td>${Math.round(hourlyTotals[i] * 100) / 100} hrs</td>
+                <td><div class="bar-container"><div class="bar" style="width: ${barWidth}%"></div></div></td>
+                `;
+                body.appendChild(row);
+            }
 
-            const timePeriod = `${formattedStartHour}:00 ${startPeriod} - ${formattedEndHour}:00 ${endPeriod}`;
-            const barWidth = (hourlyTotals[i] / maxHours) * 100;
-
-            row.innerHTML = `
-            <td>${timePeriod}</td>
-            <td>${Math.round(hourlyTotals[i] * 100) / 100} hrs</td>
-            <td>
-            <div class="bar-container">
-            <div class="bar" style="width: ${barWidth}%"></div>
-            </div>
-            </td>
-            `;
-            body.appendChild(row);
-        }
-
-        table.appendChild(body);
-        hourlyData.appendChild(table);
+            table.appendChild(body);
+            hourlyData.appendChild(table);
     }
 
     function updateOverallSummary() {
@@ -321,44 +392,17 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('No data to export');
             return;
         }
-
         const headers = ['Name', 'Category', 'Clock In', 'Clock Out', 'Break (minutes)', 'Total Hours'];
-
         const rows = entries.map(entry => [
-            entry.name,
-            entry.category,
-            entry.clockIn,
-            entry.clockOut || 'ACTIVE', // Handle empty clock out in CSV
-            entry.breakTime,
-            entry.totalHours
+            entry.name, entry.category, entry.clockIn,
+            entry.clockOut || 'ACTIVE', entry.breakTime, entry.totalHours
         ]);
-
-        const csvContent = [
-            headers.join(','),
-                          ...rows.map(row => row.join(','))
-        ].join('\n');
-
+        const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
         const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-
-        const filename = `openlabor-export-${year}-${month}-${day}-${hours}-${minutes}.csv`;
-
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-
-        document.body.appendChild(link);
+        link.href = URL.createObjectURL(blob);
+        link.download = `openlabor-export-${new Date().toISOString().slice(0,10)}.csv`;
         link.click();
-        document.body.removeChild(link);
     }
 
     function saveEntries() {
