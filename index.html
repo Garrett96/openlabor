@@ -40,17 +40,43 @@
 
                     <div class="form-group">
                         <label for="clockOut">Clock Out</label>
-                        <p>*Optional</p>
                         <input type="time" id="clockOut">
                     </div>
 
                     <div class="form-group">
-                        <label for="breakTime">Total Break Period [Minutes]</label>
+                        <label for="breakTime">Total Break Period [minutes]</label>
                         <input type="number" id="breakTime" min="0" step="15" value="0">
                     </div>
 
                     <button type="submit" class="btn">Add Entry</button>
                 </form>
+            </section>
+
+            <section class="cost-config-section">
+                <h2>Labor Cost Report</h2>
+                <div class="config-grid">
+                    <div class="form-group">
+                        <label for="wageStaff">Staff🔶 Wage ($/hr)</label>
+                        <input type="number" id="wageStaff" min="0" step="0.50" value="15.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="wageTemp">Temp🔷 Wage ($/hr)</label>
+                        <input type="number" id="wageTemp" min="0" step="0.50" value="12.00">
+                    </div>
+                     <div class="form-group">
+                        <label for="wageContractor">Contractor🔺 Wage ($/hr)</label>
+                        <input type="number" id="wageContractor" min="0" step="0.50" value="20.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="wageOther">Other Wage ($/hr)</label>
+                        <input type="number" id="wageOther" min="0" step="0.50" value="15.00">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 10px;">
+                    <label for="overtimeMultiplier">Overtime Multiplier</label>
+                    <input type="number" id="overtimeMultiplier" min="1" step="0.5" value="1.5" style="width: 80px;">
+                    <span style="font-size: 0.9em; color: #666; margin-left: 10px;">(e.g., 1.5 = Time & a Half)</span>
+                </div>
             </section>
 
             <section class="overall-summary-section">
@@ -64,7 +90,12 @@
                         <h3>Headcount Tally</h3>
                         <div id="headcountTally" class="summary-value">0</div>
                     </div>
+                    <div class="summary-card highlight-card">
+                        <h3>Total Labor Cost*</h3>
+                        <div id="totalCost" class="summary-value">$0.00</div>
+                    </div>
                 </div>
+                <p class="disclaimer">Disclaimer: Estimates are gross wages based on base rates provided. They do not include employer payroll taxes, benefits, insurance, or vendor service fees.</p>
             </section>
 
             <section class="entries-section">
@@ -79,6 +110,8 @@
                                 <th>Clock Out</th>
                                 <th>Break</th>
                                 <th>Total Hours</th>
+                                <th>OT?</th>
+                                <th>Cost</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -123,7 +156,7 @@
                         </div>
                         <div class="checkbox-group">
                             <input type="checkbox" id="enablePush">
-                            <label for="enablePush" style="font-weight:normal; margin-bottom:0;">Auto-Push on Save</label>
+                            <label for="enablePush" style="font-weight:normal; margin-bottom:0;">Enable Auto-Push on Save</label>
                         </div>
                         <button id="testPushBtn" class="btn btn-secondary">Test Connection</button>
                         <span id="pushStatus"></span>

@@ -1,12 +1,71 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // --- Migration & Initialization ---
+
+    // 1. Check for old data format and update categories
+    let rawEntries = localStorage.getItem('tempusEntries');
+    if (rawEntries) {
+        let parsedEntries = JSON.parse(rawEntries);
+        let needsSave = false;
+
+        parsedEntries.forEach(entry => {
+            // If category doesn't have an emoji, it's old data. Map it.
+            if (entry.category && !entry.category.match(/[\u{1F300}-\u{1F9FF}]/u)) {
+                needsSave = true;
+                switch(entry.category.toLowerCase()) {
+                    case 'staff': entry.category = 'Staff🔶'; break;
+                    case 'temp': entry.category = 'Temp🔷'; break;
+                    case 'contractor': entry.category = 'Contractor🔺'; break;
+                    default: entry.category = 'Other';
+                }
+            }
+        });
+
+        if (needsSave) {
+            localStorage.setItem('tempusEntries', JSON.stringify(parsedEntries));
+            console.log("Migrated old entry categories to new format.");
+        }
+    }
+
+    // 2. Check for old settings format
+    let rawSettings = localStorage.getItem('tempusSettings');
+    let settings;
+
+    const defaultSettings = {
+        wages: {
+            "Staff🔶": 15,
+            "Temp🔷": 12,
+            "Contractor🔺": 20,
+            "Other": 15
+        },
+        overtimeMultiplier: 1.5
+    };
+
+    if (rawSettings) {
+        settings = JSON.parse(rawSettings);
+        // If the loaded settings don't have the new emoji keys, reset to defaults
+        if (!settings.wages["Staff🔶"]) {
+            console.log("Old settings format detected. Resetting to defaults.");
+            settings = defaultSettings;
+            localStorage.setItem('tempusSettings', JSON.stringify(settings));
+        }
+    } else {
+        settings = defaultSettings;
+    }
+
     let entries = JSON.parse(localStorage.getItem('tempusEntries')) || [];
 
+    // DOM Elements
     const form = document.getElementById('timeEntryForm');
     const entriesBody = document.getElementById('entriesBody');
     const categoryTotals = document.getElementById('categoryTotals');
     const hourlyData = document.getElementById('hourlyData');
     const exportBtn = document.getElementById('exportBtn');
 
+    const totalHoursEl = document.getElementById('totalHours');
+    const headcountTallyEl = document.getElementById('headcountTally');
+    const totalCostEl = document.getElementById('totalCost');
+
+    // Pipeline Elements
     const exportJsonBtn = document.getElementById('exportJsonBtn');
     const importJsonInput = document.getElementById('importJsonInput');
     const webhookUrlInput = document.getElementById('webhookUrl');
@@ -14,16 +73,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const testPushBtn = document.getElementById('testPushBtn');
     const pushStatusSpan = document.getElementById('pushStatus');
 
-    const totalHoursEl = document.getElementById('totalHours');
-    const headcountTallyEl = document.getElementById('headcountTally');
+    // Config Elements
+    const wageInputs = {
+        "Staff🔶": document.getElementById('wageStaff'),
+                          "Temp🔷": document.getElementById('wageTemp'),
+                          "Contractor🔺": document.getElementById('wageContractor'),
+                          "Other": document.getElementById('wageOther')
+    };
+    const otMultiplierInput = document.getElementById('overtimeMultiplier');
 
-    webhookUrlInput.value = localStorage.getItem('tempusWebhookUrl') || '';
-    enablePushCheckbox.checked = localStorage.getItem('tempusEnablePush') === 'true';
-
+    // Initialize UI
+    loadSettingsToUI();
     renderEntries();
     updateCategoryTotals();
     updateHourlyData();
     updateOverallSummary();
+
+    // --- Event Listeners ---
+
+    // Config Listeners
+    Object.keys(wageInputs).forEach(key => {
+        if(wageInputs[key]) {
+            wageInputs[key].addEventListener('change', saveSettingsFromUI);
+        }
+    });
+    otMultiplierInput.addEventListener('change', saveSettingsFromUI);
 
     form.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -43,7 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
                           clockIn,
                           clockOut,
                           breakTime,
-                          totalHours
+                          totalHours,
+                          isOvertime: false
         };
 
         entries.push(entry);
@@ -64,6 +139,15 @@ document.addEventListener('DOMContentLoaded', function() {
     entriesBody.addEventListener('click', function(e) {
         const id = parseInt(e.target.getAttribute('data-id'));
         const entryIndex = entries.findIndex(entry => entry.id === id);
+
+        if (e.target.classList.contains('ot-toggle')) {
+            if (entryIndex !== -1) {
+                entries[entryIndex].isOvertime = e.target.checked;
+                saveEntries();
+                renderEntries();
+                updateOverallSummary();
+            }
+        }
 
         if (e.target.classList.contains('delete-btn')) {
             entries = entries.filter(entry => entry.id !== id);
@@ -107,104 +191,56 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     exportBtn.addEventListener('click', exportToCSV);
-
-    webhookUrlInput.addEventListener('change', () => {
-        localStorage.setItem('tempusWebhookUrl', webhookUrlInput.value);
-    });
-    enablePushCheckbox.addEventListener('change', () => {
-        localStorage.setItem('tempusEnablePush', enablePushCheckbox.checked);
-    });
-
     exportJsonBtn.addEventListener('click', exportToJSON);
     importJsonInput.addEventListener('change', importFromJSON);
     testPushBtn.addEventListener('click', testPipeline);
 
-    function pushEntryToPipeline(entry) {
-        const url = webhookUrlInput.value;
-        if (!url) return;
+    webhookUrlInput.value = localStorage.getItem('tempusWebhookUrl') || '';
+    enablePushCheckbox.checked = localStorage.getItem('tempusEnablePush') === 'true';
+    webhookUrlInput.addEventListener('change', () => localStorage.setItem('tempusWebhookUrl', webhookUrlInput.value));
+    enablePushCheckbox.addEventListener('change', () => localStorage.setItem('tempusEnablePush', enablePushCheckbox.checked));
 
-        fetch(url, {
-            method: 'POST',
-            mode: 'cors', // Important for cross-origin requests
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(entry)
-        })
-        .then(response => {
-            if (response.ok) {
-                console.log('Pipeline push successful');
-                showStatus('Sent!', true);
-            } else {
-                console.error('Pipeline push failed', response.status);
-                showStatus(`Error ${response.status}`, false);
+    // --- Core Logic Functions ---
+
+    function loadSettingsToUI() {
+        Object.keys(wageInputs).forEach(key => {
+            if (wageInputs[key] && settings.wages[key] !== undefined) {
+                wageInputs[key].value = settings.wages[key];
             }
-        })
-        .catch(err => {
-            console.error('Pipeline push error', err);
-            showStatus('Connection Failed', false);
         });
+        otMultiplierInput.value = settings.overtimeMultiplier;
     }
 
-    function testPipeline() {
-        if (!webhookUrlInput.value) {
-            alert("Please enter an endpoint URL first.");
-            return;
+    function saveSettingsFromUI() {
+        Object.keys(wageInputs).forEach(key => {
+            if (wageInputs[key]) {
+                settings.wages[key] = parseFloat(wageInputs[key].value) || 0;
+            }
+        });
+        settings.overtimeMultiplier = parseFloat(otMultiplierInput.value) || 1.5;
+
+        localStorage.setItem('tempusSettings', JSON.stringify(settings));
+        renderEntries();
+        updateOverallSummary();
+    }
+
+    function calculateEntryCost(entry) {
+        if (!entry.clockOut) return 0;
+
+        // Fallback logic just in case
+        let rate = settings.wages[entry.category];
+        if (rate === undefined) {
+            // Check if it matches a stripped version (migration safety)
+            const catLower = entry.category.toLowerCase();
+            if (catLower.includes('staff')) rate = settings.wages["Staff🔶"];
+            else if (catLower.includes('temp')) rate = settings.wages["Temp🔷"];
+            else if (catLower.includes('contractor')) rate = settings.wages["Contractor🔺"];
+            else rate = settings.wages["Other"];
         }
-        // test object
-        pushEntryToPipeline({
-            test: true,
-            message: "OpenLabor connection test",
-            timestamp: new Date().toISOString()
-        });
-    }
+        if (rate === undefined) rate = 0;
 
-    function showStatus(msg, success) {
-        pushStatusSpan.textContent = msg;
-        pushStatusSpan.className = success ? 'status-success' : 'status-error';
-        setTimeout(() => { pushStatusSpan.textContent = ''; }, 3000);
-    }
-
-    function exportToJSON() {
-        const dataStr = JSON.stringify(entries, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `openlabor-backup-${new Date().toISOString().slice(0,10)}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    function importFromJSON(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            try {
-                const importedData = JSON.parse(event.target.result);
-                if (Array.isArray(importedData)) {
-                    if (confirm(`Import ${importedData.length} entries? This will replace current data.`)) {
-                        entries = importedData;
-                        saveEntries();
-                        renderEntries();
-                        updateCategoryTotals();
-                        updateHourlyData();
-                        updateOverallSummary();
-                        alert("Data imported successfully.");
-                    }
-                } else {
-                    alert("Invalid JSON format.");
-                }
-            } catch (err) {
-                alert("Error parsing JSON file.");
-            }
-        };
-        reader.readAsText(file);
-        e.target.value = '';
+        const multiplier = entry.isOvertime ? settings.overtimeMultiplier : 1;
+        return entry.totalHours * rate * multiplier;
     }
 
     function calculateHours(clockIn, clockOut, breakTimeMinutes) {
@@ -273,6 +309,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const isActive = !entry.clockOut;
             if (isActive) row.classList.add('active-shift');
 
+            const cost = calculateEntryCost(entry);
+
             let clockOutCellContent = isActive
             ? `<input type="time" class="edit-clockout table-time-input" value="${entry.clockOut || ''}">`
             : entry.clockOut;
@@ -285,6 +323,14 @@ document.addEventListener('DOMContentLoaded', function() {
             ? `<span style="font-style: italic; color: #666;">Active</span>`
             : `${entry.totalHours} hrs`;
 
+            let otCellContent = isActive
+            ? '-'
+            : `<input type="checkbox" class="ot-toggle" data-id="${entry.id}" ${entry.isOvertime ? 'checked' : ''}>`;
+
+            let costCellContent = isActive
+            ? '-'
+            : `$${cost.toFixed(2)}`;
+
             let actionsCellContent = isActive
             ? `<button class="save-btn" data-id="${entry.id}">Save</button> <button class="delete-btn" data-id="${entry.id}">Delete</button>`
             : `<button class="delete-btn" data-id="${entry.id}">Delete</button>`;
@@ -296,6 +342,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <td>${clockOutCellContent}</td>
             <td>${breakCellContent}</td>
             <td>${hoursCellContent}</td>
+            <td style="text-align: center;">${otCellContent}</td>
+            <td>${costCellContent}</td>
             <td>${actionsCellContent}</td>
             `;
             entriesBody.appendChild(row);
@@ -315,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
         categoryTotals.innerHTML = '';
 
         if (Object.keys(totals).length === 0) {
-            categoryTotals.innerHTML = '<p style="color: #666;">No timesheets added.</p>';
+            categoryTotals.innerHTML = '<p style="color: #666;">No completed entries to calculate.</p>';
             return;
         }
 
@@ -326,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const percentage = grandTotalHours > 0 ? ((categoryHours / grandTotalHours) * 100).toFixed(1) : 0;
 
             card.innerHTML = `
-            <h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+            <h3>${category}</h3>
             <div class="hours">${Math.round(categoryHours * 100) / 100} hrs</div>
             <div class="percentage">${percentage}% of total</div>
             `;
@@ -380,29 +428,164 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateOverallSummary() {
         const completedEntries = entries.filter(e => e.clockOut);
+
         const totalHours = completedEntries.reduce((sum, entry) => sum + entry.totalHours, 0);
         totalHoursEl.textContent = `${Math.round(totalHours * 100) / 100} hrs`;
 
         const uniqueNames = new Set(entries.map(entry => entry.name));
         headcountTallyEl.textContent = uniqueNames.size;
+
+        const totalCost = completedEntries.reduce((sum, entry) => sum + calculateEntryCost(entry), 0);
+        totalCostEl.textContent = `$${totalCost.toFixed(2)}`;
     }
+
+    // --- Export Functions ---
 
     function exportToCSV() {
         if (entries.length === 0) {
             alert('No data to export');
             return;
         }
-        const headers = ['Name', 'Category', 'Clock In', 'Clock Out', 'Break (minutes)', 'Total Hours'];
+
+        const headers = ['Name', 'Category', 'Clock In', 'Clock Out', 'Break (minutes)', 'Total Hours', 'Overtime', 'Cost'];
+
         const rows = entries.map(entry => [
-            entry.name, entry.category, entry.clockIn,
-            entry.clockOut || 'ACTIVE', entry.breakTime, entry.totalHours
+            entry.name,
+            entry.category,
+            entry.clockIn,
+            entry.clockOut || 'ACTIVE',
+            entry.breakTime,
+            entry.totalHours,
+            entry.isOvertime ? 'Yes' : 'No',
+            calculateEntryCost(entry).toFixed(2)
         ]);
-        const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+
+        const totalHours = entries.filter(e => e.clockOut).reduce((sum, e) => sum + e.totalHours, 0);
+        const totalCost = entries.filter(e => e.clockOut).reduce((sum, e) => sum + calculateEntryCost(e), 0);
+
+        rows.push(['', '', '', '', '', '', '', '']);
+        rows.push(['TOTALS', '', '', '', '', totalHours, '', totalCost.toFixed(2)]);
+
+        const csvContent = [
+            headers.join(','),
+                          ...rows.map(row => row.join(','))
+        ].join('\n');
+
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = `openlabor-export-${new Date().toISOString().slice(0,10)}.csv`;
         link.click();
+    }
+
+    function exportToJSON() {
+        const backup = {
+            settings: settings,
+            entries: entries
+        };
+        const dataStr = JSON.stringify(backup, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `openlabor-backup-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function importFromJSON(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const importedData = JSON.parse(event.target.result);
+
+                if (importedData.entries && importedData.settings) {
+                    if (confirm(`Import backup? This will restore ${importedData.entries.length} entries and wage settings.`)) {
+                        entries = importedData.entries;
+                        settings = importedData.settings;
+                        saveEntries();
+                        localStorage.setItem('tempusSettings', JSON.stringify(settings));
+                        loadSettingsToUI();
+
+                        renderEntries();
+                        updateCategoryTotals();
+                        updateHourlyData();
+                        updateOverallSummary();
+                        alert("Backup restored successfully.");
+                    }
+                } else if (Array.isArray(importedData)) {
+                    if (confirm(`Import ${importedData.length} entries? This will replace current data.`)) {
+                        entries = importedData;
+                        saveEntries();
+                        renderEntries();
+                        updateCategoryTotals();
+                        updateHourlyData();
+                        updateOverallSummary();
+                        alert("Data imported successfully.");
+                    }
+                } else {
+                    alert("Invalid JSON format.");
+                }
+            } catch (err) {
+                alert("Error parsing JSON file.");
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    }
+
+    // --- Pipeline Functions ---
+
+    function pushEntryToPipeline(entry) {
+        const url = webhookUrlInput.value;
+        if (!url) return;
+
+        const payload = {
+            ...entry,
+            calculatedCost: calculateEntryCost(entry),
+                          wageRate: settings.wages[entry.category] || 0
+        };
+
+        fetch(url, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(response => {
+            if (response.ok) {
+                showStatus('Sent!', true);
+            } else {
+                showStatus(`Error ${response.status}`, false);
+            }
+        })
+        .catch(err => {
+            console.error('Pipeline push error', err);
+            showStatus('Connection Failed', false);
+        });
+    }
+
+    function testPipeline() {
+        if (!webhookUrlInput.value) {
+            alert("Please enter an endpoint URL first.");
+            return;
+        }
+        pushEntryToPipeline({
+            test: true,
+            message: "OpenLabor connection test",
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    function showStatus(msg, success) {
+        pushStatusSpan.textContent = msg;
+        pushStatusSpan.className = success ? 'status-success' : 'status-error';
+        setTimeout(() => { pushStatusSpan.textContent = ''; }, 3000);
     }
 
     function saveEntries() {
