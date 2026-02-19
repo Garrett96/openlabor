@@ -6,6 +6,7 @@
     --border-color: #ddd;
     --hover-color: #f1f1f1;
     --error-color: #e74c3c;
+    --active-color: #fff3cd; /* Light yellow for active shifts */
 }
 
 * {
@@ -132,6 +133,14 @@ tr:hover {
     background-color: var(--hover-color);
 }
 
+tr.active-shift {
+    background-color: var(--active-color);
+}
+
+tr.active-shift:hover {
+    background-color: #ffe8a1;
+}
+
 .delete-btn {
     background-color: var(--error-color);
     color: white;
@@ -144,6 +153,27 @@ tr:hover {
 
 .delete-btn:hover {
     background-color: #c0392b;
+}
+
+.table-time-input {
+    width: 100px;
+    padding: 5px;
+    font-size: 0.9rem;
+}
+
+.save-btn {
+    background-color: #27ae60; /* Green for save */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: 5px;
+}
+
+.save-btn:hover {
+    background-color: #219150;
 }
 
 .category-totals {
@@ -234,7 +264,6 @@ tr:hover {
     color: var(--primary-color);
 }
 
-/* NEW: Export section styling */
 .export-section {
     text-align: center;
     margin-top: 10px;

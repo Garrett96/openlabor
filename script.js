@@ -24,20 +24,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const clockOut = document.getElementById('clockOut').value;
         const breakTime = parseInt(document.getElementById('breakTime').value) || 0;
 
-        const totalHours = calculateHours(clockIn, clockOut, breakTime);
+        const totalHours = clockOut ? calculateHours(clockIn, clockOut, breakTime) : 0;
 
         const entry = {
             id: Date.now(),
-            name,
-            category,
-            clockIn,
-            clockOut,
-            breakTime,
-            totalHours
+                          name,
+                          category,
+                          clockIn,
+                          clockOut,
+                          breakTime,
+                          totalHours
         };
 
         entries.push(entry);
-
         saveEntries();
 
         renderEntries();
@@ -48,11 +47,53 @@ document.addEventListener('DOMContentLoaded', function() {
         form.reset();
     });
 
+    entriesBody.addEventListener('click', function(e) {
+        if (e.target.classList.contains('delete-btn')) {
+            const id = parseInt(e.target.getAttribute('data-id'));
+            entries = entries.filter(entry => entry.id !== id);
+            saveEntries();
+            renderEntries();
+            updateCategoryTotals();
+            updateHourlyData();
+            updateOverallSummary();
+        }
+
+        if (e.target.classList.contains('save-btn')) {
+            const id = parseInt(e.target.getAttribute('data-id'));
+            const row = e.target.closest('tr');
+            const clockOutInput = row.querySelector('.edit-clockout');
+            const breakInput = row.querySelector('.edit-break');
+
+            const newClockOut = clockOutInput.value;
+            const newBreak = parseInt(breakInput.value) || 0;
+
+            if(!newClockOut) {
+                alert("Please enter a clock out time.");
+                return;
+            }
+
+            const entryIndex = entries.findIndex(entry => entry.id === id);
+            if (entryIndex !== -1) {
+                entries[entryIndex].clockOut = newClockOut;
+                entries[entryIndex].breakTime = newBreak;
+                entries[entryIndex].totalHours = calculateHours(entries[entryIndex].clockIn, newClockOut, newBreak);
+
+                saveEntries();
+                renderEntries();
+                updateCategoryTotals();
+                updateHourlyData();
+                updateOverallSummary();
+            }
+        }
+    });
+
     exportBtn.addEventListener('click', function() {
         exportToCSV();
     });
 
     function calculateHours(clockIn, clockOut, breakTimeMinutes) {
+        if (!clockIn || !clockOut) return 0;
+
         const [inHours, inMinutes] = clockIn.split(':').map(Number);
         const [outHours, outMinutes] = clockOut.split(':').map(Number);
 
@@ -70,6 +111,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function calculateHourlyDistribution(clockIn, clockOut, breakTimeMinutes) {
+        if (!clockIn || !clockOut) return new Array(24).fill(0);
+
         const [inHours, inMinutes] = clockIn.split(':').map(Number);
         const [outHours, outMinutes] = clockOut.split(':').map(Number);
 
@@ -96,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const minutesInThisHour = Math.min(
                 (nextHour - currentTime) / (1000 * 60),
-                remainingMinutes
+                                               remainingMinutes
             );
 
             hourlyDistribution[hour] += minutesInThisHour / 60;
@@ -113,43 +156,82 @@ document.addEventListener('DOMContentLoaded', function() {
 
         entries.forEach(entry => {
             const row = document.createElement('tr');
+
+            const isActive = !entry.clockOut;
+            if (isActive) {
+                row.classList.add('active-shift');
+            }
+
+            let clockOutCellContent;
+            if (isActive) {
+                clockOutCellContent = `
+                <input type="time" class="edit-clockout table-time-input" value="${entry.clockOut || ''}">
+                `;
+            } else {
+                clockOutCellContent = entry.clockOut;
+            }
+
+            let breakCellContent;
+            if (isActive) {
+                breakCellContent = `
+                <input type="number" class="edit-break table-time-input" value="${entry.breakTime}" min="0" step="15" style="width: 60px;">
+                `;
+            } else {
+                breakCellContent = `${entry.breakTime} min`;
+            }
+
+            let hoursCellContent;
+            if (isActive) {
+                hoursCellContent = `<span style="font-style: italic; color: #666;">Active</span>`;
+            } else {
+                hoursCellContent = `${entry.totalHours} hrs`;
+            }
+
+            let actionsCellContent;
+            if (isActive) {
+                actionsCellContent = `
+                <button class="save-btn" data-id="${entry.id}">Save</button>
+                <button class="delete-btn" data-id="${entry.id}">Delete</button>
+                `;
+            } else {
+                actionsCellContent = `
+                <button class="delete-btn" data-id="${entry.id}">Delete</button>
+                `;
+            }
+
             row.innerHTML = `
-                <td>${entry.name}</td>
-                <td>${entry.category}</td>
-                <td>${entry.clockIn}</td>
-                <td>${entry.clockOut}</td>
-                <td>${entry.breakTime} min</td>
-                <td>${entry.totalHours} hrs</td>
-                <td><button class="delete-btn" data-id="${entry.id}">Delete</button></td>
+            <td>${entry.name}</td>
+            <td>${entry.category}</td>
+            <td>${entry.clockIn}</td>
+            <td>${clockOutCellContent}</td>
+            <td>${breakCellContent}</td>
+            <td>${hoursCellContent}</td>
+            <td>${actionsCellContent}</td>
             `;
             entriesBody.appendChild(row);
-        });
-
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                entries = entries.filter(entry => entry.id !== id);
-                saveEntries();
-                renderEntries();
-                updateCategoryTotals();
-                updateHourlyData();
-                updateOverallSummary();
-            });
         });
     }
 
     function updateCategoryTotals() {
         const totals = {};
         entries.forEach(entry => {
-            if (!totals[entry.category]) {
-                totals[entry.category] = 0;
+            if (entry.clockOut) {
+                if (!totals[entry.category]) {
+                    totals[entry.category] = 0;
+                }
+                totals[entry.category] += entry.totalHours;
             }
-            totals[entry.category] += entry.totalHours;
         });
 
         const grandTotalHours = Object.values(totals).reduce((sum, hours) => sum + hours, 0);
 
         categoryTotals.innerHTML = '';
+
+        if (Object.keys(totals).length === 0) {
+            categoryTotals.innerHTML = '<p style="color: #666;">No completed entries to calculate.</p>';
+            return;
+        }
+
         Object.keys(totals).forEach(category => {
             const card = document.createElement('div');
             card.className = 'category-card';
@@ -158,9 +240,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const percentage = grandTotalHours > 0 ? ((categoryHours / grandTotalHours) * 100).toFixed(1) : 0;
 
             card.innerHTML = `
-                <h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>
-                <div class="hours">${Math.round(categoryHours * 100) / 100} hrs</div>
-                <div class="percentage">${percentage}% of total</div>
+            <h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+            <div class="hours">${Math.round(categoryHours * 100) / 100} hrs</div>
+            <div class="percentage">${percentage}% of total</div>
             `;
             categoryTotals.appendChild(card);
         });
@@ -168,7 +250,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateHourlyData() {
         const hourlyTotals = new Array(24).fill(0);
-        entries.forEach(entry => {
+
+        const completedEntries = entries.filter(e => e.clockOut);
+
+        completedEntries.forEach(entry => {
             const distribution = calculateHourlyDistribution(entry.clockIn, entry.clockOut, entry.breakTime);
             for (let i = 0; i < 24; i++) {
                 hourlyTotals[i] += distribution[i];
@@ -181,11 +266,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const header = document.createElement('thead');
         header.innerHTML = `
-            <tr>
-                <th>Time Period</th>
-                <th>Total Hours</th>
-                <th>Bar Chart</th>
-            </tr>
+        <tr>
+        <th>Time Period</th>
+        <th>Total Hours</th>
+        <th>Bar Chart</th>
+        </tr>
         `;
         table.appendChild(header);
 
@@ -207,13 +292,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const barWidth = (hourlyTotals[i] / maxHours) * 100;
 
             row.innerHTML = `
-                <td>${timePeriod}</td>
-                <td>${Math.round(hourlyTotals[i] * 100) / 100} hrs</td>
-                <td>
-                    <div class="bar-container">
-                        <div class="bar" style="width: ${barWidth}%"></div>
-                    </div>
-                </td>
+            <td>${timePeriod}</td>
+            <td>${Math.round(hourlyTotals[i] * 100) / 100} hrs</td>
+            <td>
+            <div class="bar-container">
+            <div class="bar" style="width: ${barWidth}%"></div>
+            </div>
+            </td>
             `;
             body.appendChild(row);
         }
@@ -223,7 +308,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateOverallSummary() {
-        const totalHours = entries.reduce((sum, entry) => sum + entry.totalHours, 0);
+        const completedEntries = entries.filter(e => e.clockOut);
+        const totalHours = completedEntries.reduce((sum, entry) => sum + entry.totalHours, 0);
         totalHoursEl.textContent = `${Math.round(totalHours * 100) / 100} hrs`;
 
         const uniqueNames = new Set(entries.map(entry => entry.name));
@@ -242,14 +328,14 @@ document.addEventListener('DOMContentLoaded', function() {
             entry.name,
             entry.category,
             entry.clockIn,
-            entry.clockOut,
+            entry.clockOut || 'ACTIVE', // Handle empty clock out in CSV
             entry.breakTime,
             entry.totalHours
         ]);
 
         const csvContent = [
             headers.join(','),
-            ...rows.map(row => row.join(','))
+                          ...rows.map(row => row.join(','))
         ].join('\n');
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
