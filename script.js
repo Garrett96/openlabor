@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const testPushBtn = document.getElementById('testPushBtn');
     const pushStatusSpan = document.getElementById('pushStatus');
 
-    // Config Elements
     const wageInputs = {
         "Staff🔶": document.getElementById('wageStaff'),
                           "Temp🔷": document.getElementById('wageTemp'),
@@ -451,7 +450,7 @@ document.addEventListener('DOMContentLoaded', function() {
         rows.push(['', '', '', '', '', '', '', '']);
         rows.push(['TOTALS', '', '', '', '', totalHours, '', totalCost.toFixed(2)]);
 
-        const csvContent = [
+        const csvContent = '\uFEFF' + [
             headers.join(','),
                           ...rows.map(row => row.join(','))
         ].join('\n');
