@@ -135,7 +135,6 @@ tr:hover {
     background-color: var(--hover-color);
 }
 
-/* Active Shift Styles */
 tr.active-shift {
     background-color: var(--active-color);
 }
@@ -158,7 +157,6 @@ tr.active-shift:hover {
     background-color: #c0392b;
 }
 
-/* Inline Table Edit Styles */
 .table-time-input {
     width: 100px;
     padding: 5px;
@@ -180,7 +178,22 @@ tr.active-shift:hover {
     background-color: #219150;
 }
 
-/* Category Summary Styles */
+.edit-btn {
+    background-color: #266199;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: 5px;
+}
+
+.edit-btn:hover {
+    background-color: #245584;
+}
+
+
 .category-totals {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -237,7 +250,6 @@ tr.active-shift:hover {
     border-radius: 4px;
 }
 
-/* Overall Summary Styles */
 .overall-summary-section {
     background-color: white;
     border-radius: 8px;
@@ -271,7 +283,6 @@ tr.active-shift:hover {
     color: var(--primary-color);
 }
 
-/* NEW: Cost Configuration Styles */
 .cost-config-section {
     background-color: white;
     border-radius: 8px;
@@ -317,7 +328,6 @@ tr.active-shift:hover {
     cursor: pointer;
 }
 
-/* Pipeline / Data Panel Styles */
 .pipeline-section {
     background-color: white;
     border-radius: 8px;
@@ -376,7 +386,6 @@ font-weight: bold;
 .status-success { color: var(--success-color); }
 .status-error { color: var(--error-color); }
 
-/* Responsive Layout */
 @media (max-width: 768px) {
     .pipeline-controls {
         grid-template-columns: 1fr;
