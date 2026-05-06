@@ -1,24 +1,21 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+    const CATEGORIES = [
+        { key: 'Staff🔶', label: 'Staff🔶', defaultWage: 15 },
+        { key: 'Temp🔷', label: 'Temp🔷', defaultWage: 12 },
+        { key: 'Contractor🔺', label: 'Contractor🔺', defaultWage: 20 },
+        { key: 'Other', label: 'Other', defaultWage: 15 }
+    ];
+
     let rawEntries = localStorage.getItem('tempusEntries');
+    let entries = [];
+
     if (rawEntries) {
-        let parsedEntries = JSON.parse(rawEntries);
-        let needsSave = false;
-
-        parsedEntries.forEach(entry => {
-            if (entry.category && !entry.category.match(/[\u{1F300}-\u{1F9FF}]/u)) {
-                needsSave = true;
-                switch(entry.category.toLowerCase()) {
-                    case 'staff': entry.category = 'Staff🔶'; break;
-                    case 'temp': entry.category = 'Temp🔷'; break;
-                    case 'contractor': entry.category = 'Contractor🔺'; break;
-                    default: entry.category = 'Other';
-                }
-            }
-        });
-
-        if (needsSave) {
-            localStorage.setItem('tempusEntries', JSON.stringify(parsedEntries));
+        try {
+            entries = JSON.parse(rawEntries);
+        } catch (e) {
+            console.error("Failed to parse entries", e);
+            entries = [];
         }
     }
 
@@ -26,28 +23,25 @@ document.addEventListener('DOMContentLoaded', function() {
     let settings;
 
     const defaultSettings = {
-        wages: {
-            "Staff🔶": 15,
-            "Temp🔷": 12,
-            "Contractor🔺": 20,
-            "Other": 15
-        },
-        overtimeMultiplier: 1.5
+        wages: CATEGORIES.reduce((acc, cat) => { acc[cat.key] = cat.defaultWage; return acc; }, {}),
+                          overtimeMultiplier: 1.5
     };
 
     if (rawSettings) {
-        settings = JSON.parse(rawSettings);
-        if (!settings.wages["Staff🔶"]) {
+        try {
+            settings = JSON.parse(rawSettings);
+            CATEGORIES.forEach(cat => {
+                if (settings.wages[cat.key] === undefined) settings.wages[cat.key] = cat.defaultWage;
+            });
+        } catch (e) {
             settings = defaultSettings;
-            localStorage.setItem('tempusSettings', JSON.stringify(settings));
         }
     } else {
         settings = defaultSettings;
     }
 
-    let entries = JSON.parse(localStorage.getItem('tempusEntries')) || [];
-
     let editingEntryId = null;
+    let lastDeletedEntry = null; // For Undo functionality
 
     const form = document.getElementById('timeEntryForm');
     const entriesBody = document.getElementById('entriesBody');
@@ -64,14 +58,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const webhookUrlInput = document.getElementById('webhookUrl');
     const enablePushCheckbox = document.getElementById('enablePush');
     const testPushBtn = document.getElementById('testPushBtn');
-    const pushStatusSpan = document.getElementById('pushStatus');
 
-    const wageInputs = {
-        "Staff🔶": document.getElementById('wageStaff'),
-                          "Temp🔷": document.getElementById('wageTemp'),
-                          "Contractor🔺": document.getElementById('wageContractor'),
-                          "Other": document.getElementById('wageOther')
-    };
+    const wageInputs = CATEGORIES.reduce((acc, cat) => {
+        const id = 'wage' + cat.key.replace(/[^a-zA-Z]/g, "");
+        if(cat.key === 'Staff🔶') acc[cat.key] = document.getElementById('wageStaff');
+        if(cat.key === 'Temp🔷') acc[cat.key] = document.getElementById('wageTemp');
+        if(cat.key === 'Contractor🔺') acc[cat.key] = document.getElementById('wageContractor');
+        if(cat.key === 'Other') acc[cat.key] = document.getElementById('wageOther');
+        return acc;
+    }, {});
+
     const otMultiplierInput = document.getElementById('overtimeMultiplier');
 
     loadSettingsToUI();
@@ -79,7 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCategoryTotals();
     updateHourlyData();
     updateOverallSummary();
-
 
     Object.keys(wageInputs).forEach(key => {
         if(wageInputs[key]) wageInputs[key].addEventListener('change', saveSettingsFromUI);
@@ -119,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateHourlyData();
             updateOverallSummary();
             form.reset();
+                              showToast("Entry added successfully", "success");
         });
 
         entriesBody.addEventListener('click', function(e) {
@@ -135,12 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (e.target.classList.contains('delete-btn')) {
-                entries = entries.filter(entry => entry.id !== id);
-                saveEntries();
-                renderEntries();
-                updateCategoryTotals();
-                updateHourlyData();
-                updateOverallSummary();
+                deleteEntry(id);
             }
 
             if (e.target.classList.contains('edit-btn')) {
@@ -162,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const newBreak = parseInt(row.querySelector('.edit-break').value) || 0;
 
                 if(!newClockIn || !newClockOut) {
-                    alert("Clock In and Out times are required.");
+                    showToast("Clock In and Out times are required.", "error");
                     return;
                 }
 
@@ -180,11 +171,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         pushEntryToPipeline(entries[entryIndex]);
                     }
 
-                    editingEntryId = null; // Exit edit mode
+                    editingEntryId = null;
                     renderEntries();
                     updateCategoryTotals();
                     updateHourlyData();
                     updateOverallSummary();
+                    showToast("Entry updated", "success");
                 }
             }
 
@@ -197,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const newBreak = parseInt(breakInput.value) || 0;
 
                 if(!newClockOut) {
-                    alert("Please enter a clock out time.");
+                    showToast("Please enter a clock out time.", "error");
                     return;
                 }
 
@@ -216,6 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateCategoryTotals();
                     updateHourlyData();
                     updateOverallSummary();
+                    showToast("Shift saved", "success");
                 }
             }
         });
@@ -230,6 +223,32 @@ document.addEventListener('DOMContentLoaded', function() {
         webhookUrlInput.addEventListener('change', () => localStorage.setItem('tempusWebhookUrl', webhookUrlInput.value));
         enablePushCheckbox.addEventListener('change', () => localStorage.setItem('tempusEnablePush', enablePushCheckbox.checked));
 
+        function deleteEntry(id) {
+            const entryIndex = entries.findIndex(e => e.id === id);
+            if (entryIndex === -1) return;
+
+            lastDeletedEntry = entries[entryIndex];
+            entries.splice(entryIndex, 1);
+
+            saveEntries();
+            renderEntries();
+            updateCategoryTotals();
+            updateHourlyData();
+            updateOverallSummary();
+
+            showToast("Entry deleted", "error", true, () => {
+                if (lastDeletedEntry) {
+                    entries.push(lastDeletedEntry);
+                    saveEntries();
+                    renderEntries();
+                    updateCategoryTotals();
+                    updateHourlyData();
+                    updateOverallSummary();
+                    showToast("Entry restored", "success");
+                    lastDeletedEntry = null;
+                }
+            });
+        }
 
         function loadSettingsToUI() {
             Object.keys(wageInputs).forEach(key => {
@@ -256,6 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function calculateEntryCost(entry) {
             if (!entry.clockOut) return 0;
             let rate = settings.wages[entry.category];
+
             if (rate === undefined) {
                 const catLower = entry.category.toLowerCase();
                 if (catLower.includes('staff')) rate = settings.wages["Staff🔶"];
@@ -264,6 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 else rate = settings.wages["Other"];
             }
             if (rate === undefined) rate = 0;
+
             const multiplier = entry.isOvertime ? settings.overtimeMultiplier : 1;
             return entry.totalHours * rate * multiplier;
         }
@@ -339,10 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     nameCell = `<input type="text" class="edit-name table-time-input" value="${entry.name}">`;
                     catCell = `
                     <select class="edit-category table-time-input">
-                    <option value="Staff🔶" ${entry.category === 'Staff🔶' ? 'selected' : ''}>Staff🔶</option>
-                    <option value="Temp🔷" ${entry.category === 'Temp🔷' ? 'selected' : ''}>Temp🔷</option>
-                    <option value="Contractor🔺" ${entry.category === 'Contractor🔺' ? 'selected' : ''}>Contractor🔺</option>
-                    <option value="Other" ${entry.category === 'Other' ? 'selected' : ''}>Other</option>
+                    ${CATEGORIES.map(c => `<option value="${c.key}" ${entry.category === c.key ? 'selected' : ''}>${c.label}</option>`).join('')}
                     </select>`;
                     ciCell = `<input type="time" class="edit-clockin table-time-input" value="${entry.clockIn}">`;
                     coCell = `<input type="time" class="edit-clockout table-time-input" value="${entry.clockOut || ''}">`;
@@ -485,10 +503,9 @@ document.addEventListener('DOMContentLoaded', function() {
             totalCostEl.textContent = `$${totalCost.toFixed(2)}`;
         }
 
-
         function exportToCSV() {
             if (entries.length === 0) {
-                alert('No data to export');
+                showToast('No data to export', 'error');
                 return;
             }
 
@@ -521,6 +538,7 @@ document.addEventListener('DOMContentLoaded', function() {
             link.href = URL.createObjectURL(blob);
             link.download = `openlabor-export-${new Date().toISOString().slice(0,10)}.csv`;
             link.click();
+            showToast("CSV Downloaded", "success");
         }
 
         function exportToJSON() {
@@ -538,6 +556,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            showToast("Backup Created", "success");
         }
 
         function importFromJSON(e) {
@@ -561,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             updateCategoryTotals();
                             updateHourlyData();
                             updateOverallSummary();
-                            alert("Backup restored successfully.");
+                            showToast("Backup restored successfully.", "success");
                         }
                     } else if (Array.isArray(importedData)) {
                         if (confirm(`Import ${importedData.length} entries? This will replace current data.`)) {
@@ -571,13 +590,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             updateCategoryTotals();
                             updateHourlyData();
                             updateOverallSummary();
-                            alert("Data imported successfully.");
+                            showToast("Data imported successfully.", "success");
                         }
                     } else {
-                        alert("Invalid JSON format.");
+                        showToast("Invalid JSON format.", "error");
                     }
                 } catch (err) {
-                    alert("Error parsing JSON file.");
+                    showToast("Error parsing JSON file.", "error");
                 }
             };
             reader.readAsText(file);
@@ -603,20 +622,20 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => {
                 if (response.ok) {
-                    showStatus('Sent!', true);
+                    showToast('Sent!', 'success');
                 } else {
-                    showStatus(`Error ${response.status}`, false);
+                    showToast(`Error ${response.status}`, 'error');
                 }
             })
             .catch(err => {
                 console.error('Pipeline push error', err);
-                showStatus('Connection Failed', false);
+                showToast('Connection Failed', 'error');
             });
         }
 
         function testPipeline() {
             if (!webhookUrlInput.value) {
-                alert("Please enter an endpoint URL first.");
+                showToast("Please enter an endpoint URL first.", "error");
                 return;
             }
             pushEntryToPipeline({
@@ -626,13 +645,48 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        function showStatus(msg, success) {
-            pushStatusSpan.textContent = msg;
-            pushStatusSpan.className = success ? 'status-success' : 'status-error';
-            setTimeout(() => { pushStatusSpan.textContent = ''; }, 3000);
-        }
-
         function saveEntries() {
             localStorage.setItem('tempusEntries', JSON.stringify(entries));
+        }
+
+        /**
+         * Shows a toast notification.
+         * @param {string} msg - The message to display.
+         * @param {string} type - 'success' or 'error'.
+         * @param {boolean} hasUndo - Whether to show an Undo button.
+         * @param {function} undoCallback - Function to call if Undo is clicked.
+         */
+        function showToast(msg, type = 'success', hasUndo = false, undoCallback = null) {
+            const container = document.getElementById('toast-container') || createToastContainer();
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            let html = `<span>${msg}</span>`;
+            if (hasUndo) {
+                html += `<button class="toast-btn" id="undoBtn">Undo</button>`;
+            }
+            toast.innerHTML = html;
+
+            container.appendChild(toast);
+
+            const timeoutId = setTimeout(() => {
+                toast.remove();
+            }, 4000);
+
+            if (hasUndo && undoCallback) {
+                toast.querySelector('#undoBtn').addEventListener('click', () => {
+                    clearTimeout(timeoutId);
+                    toast.remove();
+                    undoCallback();
+                });
+            }
+        }
+
+        function createToastContainer() {
+            const c = document.createElement('div');
+            c.id = 'toast-container';
+            document.body.appendChild(c);
+            return c;
         }
 });
