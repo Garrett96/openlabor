@@ -135,14 +135,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (e.target.classList.contains('delete-btn')) {
-                if(confirm("Are you sure you want to delete this entry?")) {
-                    entries = entries.filter(entry => entry.id !== id);
-                    saveEntries();
-                    renderEntries();
-                    updateCategoryTotals();
-                    updateHourlyData();
-                    updateOverallSummary();
-                }
+                entries = entries.filter(entry => entry.id !== id);
+                saveEntries();
+                renderEntries();
+                updateCategoryTotals();
+                updateHourlyData();
+                updateOverallSummary();
             }
 
             if (e.target.classList.contains('edit-btn')) {
