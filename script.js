@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateHourlyData();
         updateOverallSummary();
 
+
         Object.keys(wageInputs).forEach(key => {
             if(wageInputs[key]) wageInputs[key].addEventListener('change', saveSettingsFromUI);
         });
@@ -166,6 +167,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
+
+            document.addEventListener('mousedown', function(e) {
+                if (!editingEntryId) return;
+                if (entriesBody.contains(e.target)) return;
+
+                editingEntryId = null;
+                renderEntries();
+            });
+
+            exportBtn.addEventListener('click', exportToCSV);
+            exportJsonBtn.addEventListener('click', exportToJSON);
+            importJsonInput.addEventListener('change', importFromJSON);
+            testPushBtn.addEventListener('click', testPipeline);
+
+            webhookUrlInput.value = localStorage.getItem('tempusWebhookUrl') || '';
+            enablePushCheckbox.checked = localStorage.getItem('tempusEnablePush') === 'true';
+
+            webhookUrlInput.addEventListener('change', () => localStorage.setItem('tempusWebhookUrl', webhookUrlInput.value));
+            enablePushCheckbox.addEventListener('change', () => localStorage.setItem('tempusEnablePush', enablePushCheckbox.checked));
+
 
 
             function performFullUpdate(id, row) {
@@ -382,7 +403,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
 
                         otCell = `<input type="checkbox" class="ot-toggle" data-id="${entry.id}" ${entry.isOvertime ? 'checked' : ''}>`;
-
                         actionsCell = `<button class="delete-btn" data-id="${entry.id}">Delete</button>`;
                     }
                     else if (isActive) {
@@ -394,7 +414,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         hoursCell = `<span style="font-style: italic; color: #666;">Active</span>`;
                         costCell = '-';
                         otCell = '-';
-
                         actionsCell = `<button class="delete-btn" data-id="${entry.id}">Delete</button>`;
                     }
                     else {
@@ -407,7 +426,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         hoursCell = `${entry.totalHours} hrs`;
                         costCell = `$${cost.toFixed(2)}`;
                         otCell = `<input type="checkbox" class="ot-toggle" data-id="${entry.id}" ${entry.isOvertime ? 'checked' : ''}>`;
-
                         actionsCell = `<button class="delete-btn" data-id="${entry.id}">Delete</button>`;
                     }
 
@@ -513,6 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const totalCost = completedEntries.reduce((sum, entry) => sum + calculateEntryCost(entry), 0);
                 totalCostEl.textContent = `$${totalCost.toFixed(2)}`;
             }
+
 
             function exportToCSV() {
                 if (entries.length === 0) {
