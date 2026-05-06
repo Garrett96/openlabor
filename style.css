@@ -140,6 +140,12 @@ th {
     white-space: nowrap;
 }
 
+/* Make rows look clickable */
+tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
 tr:hover {
     background-color: var(--hover-color);
 }
@@ -187,24 +193,9 @@ tr.active-shift:hover {
     background-color: #219150;
 }
 
-.edit-btn {
-    background-color: #266199;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    margin-left: 5px;
-}
-
-.edit-btn:hover {
-    background-color: #245584;
-}
-
-/* Specific Cancel button styling for uniformity */
+/* Cancel button uniform styling */
 .cancel-edit-btn {
-    background-color: #6c757d; /* Grey instead of Red */
+    background-color: #6c757d;
 }
 .cancel-edit-btn:hover {
     background-color: #5a6268;
@@ -492,8 +483,9 @@ gap: 10px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
-    tr:hover {
-        background-color: white;
+    /* Keep cursor pointer for the card */
+    tbody tr {
+        cursor: pointer;
     }
 
     tr.active-shift {
@@ -511,13 +503,13 @@ gap: 10px;
         align-items: center;
     }
 
-    /* Actions Cell (Container for buttons) */
+    /* Actions Cell */
     td:last-child {
         border-bottom: none;
         background-color: #fafafa;
-        justify-content: center; /* Centers the buttons horizontally */
+        justify-content: center;
         padding: 12px 10px;
-        gap: 8px; /* Space between buttons */
+        gap: 8px;
         border-radius: 0 0 8px 8px;
     }
 
@@ -549,17 +541,14 @@ gap: 10px;
     td:nth-of-type(8):before { content: "Cost"; }
 
     /* --- BUTTON REFINEMENTS --- */
-
-    /* Force compact, auto-width buttons inside cards */
     td:last-child .btn,
     td:last-child .delete-btn,
-    td:last-child .save-btn,
-    td:last-child .edit-btn {
-        width: auto;          /* Let content define width */
-        flex: 0 0 auto;       /* Prevent stretching */
-        padding: 6px 14px;    /* Compact padding */
-        font-size: 0.9rem;    /* Uniform font size */
-        margin: 0;            /* Reset margins for gap usage */
+    td:last-child .save-btn {
+        width: auto;
+        flex: 0 0 auto;
+        padding: 6px 14px;
+        font-size: 0.9rem;
+        margin: 0;
     }
 
     /* Input sizing within cards */
@@ -568,12 +557,12 @@ gap: 10px;
         padding: 8px;
     }
 
-    /* Form Submit Button: Keep full width for easy tapping */
+    /* Form Submit Button: Keep full width */
     #timeEntryForm .btn {
     width: 100%;
     }
 
-    /* Pipeline buttons: Allow wrapping but keep compact */
+    /* Pipeline buttons */
     .button-group .btn {
         width: auto;
     }
