@@ -1,0 +1,502 @@
+:root {
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+    --secondary: #64748b;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--background);
+    color: var(--text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+/* --- Header --- */
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+header h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.025em;
+    margin-bottom: 0.5rem;
+}
+
+header p {
+    color: var(--secondary);
+    font-size: 1.1rem;
+}
+
+/* --- Layout --- */
+main {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+section {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+}
+
+h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+h2::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 1.25rem;
+    background: var(--primary);
+    border-radius: 2px;
+}
+
+/* --- Form Elements --- */
+label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--secondary);
+    margin-bottom: 0.5rem;
+}
+
+input, select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    color: var(--text-main);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Remove ugly number spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--primary);
+    color: white;
+}
+
+.btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary {
+    background: var(--surface);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--background);
+    border-color: #cbd5e1;
+}
+
+/* --- Table --- */
+.entries-container {
+    overflow-x: auto;
+    margin: 0 -1.5rem;
+    padding: 0 1.5rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--secondary);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9375rem;
+    color: var(--text-main);
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover {
+    background-color: #f8fafc;
+}
+
+tr.active-shift {
+    background-color: #fffbeb;
+}
+
+tr.active-shift:hover {
+    background-color: #fef3c7;
+}
+
+/* --- Action Buttons --- */
+.delete-btn {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid transparent;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.delete-btn:hover {
+    background: #fee2e2;
+    border-color: #fecaca;
+}
+
+.table-time-input {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+}
+
+/* --- Summary & Cards --- */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.summary-card, .category-card {
+    background: var(--background);
+    padding: 1.25rem;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+
+.summary-card h3, .category-card h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--secondary);
+    margin-bottom: 0.5rem;
+}
+
+.summary-value, .category-card .hours {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.highlight-card {
+    background: var(--primary-light);
+    border-color: #c7d2fe;
+}
+
+.category-totals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.category-card .percentage {
+    font-size: 0.8rem;
+    color: var(--secondary);
+    margin-top: 4px;
+}
+
+/* --- Disclaimer --- */
+.disclaimer {
+    font-size: 0.75rem;
+    color: var(--secondary);
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    line-height: 1.4;
+}
+
+/* --- Hourly Table --- */
+.hourly-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.hourly-table th, .hourly-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.bar-container {
+    width: 100%;
+    height: 20px;
+    background-color: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    background-color: var(--primary);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+/* --- Pipeline & Config --- */
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.pipeline-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* --- Footer --- */
+footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.875rem;
+    color: var(--secondary);
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+footer a {
+    color: var(--secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+footer a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+/* --- Toast --- */
+#toast-container {
+position: fixed;
+bottom: 24px;
+right: 24px;
+z-index: 9999;
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+
+.toast {
+    background-color: #1e293b;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast.success { border-left: 4px solid var(--success); }
+.toast.error { border-left: 4px solid var(--danger); }
+
+.toast-btn {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* --- Responsive Mobile Layout --- */
+@media (max-width: 1000px) {
+    .container { padding: 1rem; }
+    main { display: flex; flex-direction: column; }
+
+    .input-section { order: 1; }
+    .entries-section { order: 2; }
+    .overall-summary-section { order: 3; }
+    .summary-section { order: 4; }
+    .cost-config-section { order: 5; }
+    .pipeline-section { order: 6; }
+    .hourly-section { display: none; }
+
+    .entries-container { overflow-x: visible; }
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { position: absolute; left: -9999px; }
+
+    tr {
+        border: 1px solid var(--border);
+        margin-bottom: 1.5rem;
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        background: var(--surface);
+    }
+    tr:hover { background: var(--surface); }
+
+    td {
+        border: none;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+        padding: 10px 10px 10px 45%;
+        text-align: left;
+        min-height: 46px;
+        display: flex;
+        align-items: center;
+    }
+
+    td:last-child {
+        background-color: #f8fafc;
+        justify-content: center;
+        padding: 12px;
+        border-radius: 0 0 12px 12px;
+        border-bottom: none;
+    }
+
+    td:before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 42%;
+        padding: 10px;
+        font-weight: 600;
+        color: var(--secondary);
+        font-size: 0.875rem;
+        white-space: nowrap;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        height: 100%;
+    }
+
+    td:nth-of-type(1):before { content: "Name"; }
+    td:nth-of-type(2):before { content: "Category"; }
+    td:nth-of-type(3):before { content: "Clock In"; }
+    td:nth-of-type(4):before { content: "Clock Out"; }
+    td:nth-of-type(5):before { content: "Break"; }
+    td:nth-of-type(6):before { content: "Hours"; }
+    td:nth-of-type(7):before { content: "OT?"; }
+    td:nth-of-type(8):before { content: "Cost"; }
+
+    .delete-btn, .save-btn {
+        width: auto;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    input, select { font-size: 16px; }
+    .pipeline-controls, .summary-cards { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 1001px) {
+    main { grid-template-columns: 1fr 2fr; }
+    .input-section { grid-row: 1 / 2; }
+    .entries-section { grid-row: 1 / 2; }
+    .overall-summary-section, .summary-section, .hourly-section, .pipeline-section, .cost-config-section {
+        grid-column: 1 / 3;
+    }
+}
+
+/* Prevent checkboxes from causing table layout shift on focus */
+input[type="checkbox"]:focus {
+    box-shadow: none !important;
+    outline: none !important;
+    border-color: transparent !important;
+}
+
+/* Optional: Give checkboxes a subtle, non-shifting cursor hint */
+input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/* Prevent radio buttons from causing layout shift on focus */
+input[type="radio"]:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
