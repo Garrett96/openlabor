@@ -1,21 +1,9 @@
 // src/components/Config.tsx
 
 import { useAppContext } from '../context/AppContext';
-import { CATEGORIES } from '../types';
 
 export default function Config() {
     const { settings, updateSettings } = useAppContext();
-
-    const handleWageChange = (categoryKey: string, value: string) => {
-        const parsedValue = parseFloat(value) || 0;
-        updateSettings({
-            ...settings,
-            wages: {
-                ...settings.wages,
-                [categoryKey]: parsedValue
-            }
-        });
-    };
 
     const handleOtMultiplierChange = (value: string) => {
         const parsedValue = parseFloat(value) || 1.5;
@@ -28,22 +16,6 @@ export default function Config() {
     return (
         <section className="cost-config-section">
         <h2>Config</h2>
-        <div className="config-grid">
-        {CATEGORIES.map(cat => (
-            <div key={cat.key} className="form-group">
-            <label htmlFor={`wage-${cat.key}`}>{cat.label} Wage ($/hr)</label>
-            <input
-            type="number"
-            id={`wage-${cat.key}`}
-            min="0"
-            step="0.50"
-            value={settings.wages[cat.key]}
-            onChange={(e) => handleWageChange(cat.key, e.target.value)}
-            />
-            </div>
-        ))}
-        </div>
-
         <div style={{ display: 'flex', gap: '2rem', marginTop: '15px', flexWrap: 'wrap' }}>
         <div className="form-group">
         <label htmlFor="overtimeMultiplier">Overtime Multiplier</label>

@@ -1,0 +1,86 @@
+// src/components/EmployeeManager.tsx
+
+import { useState } from 'react';
+import { useEmployees } from '../context/EmployeeContext';
+import { ROLES, RoleType, Employee } from '../types';
+
+export default function EmployeeManager() {
+    const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
+
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [role, setRole] = useState<RoleType>('Staff');
+    const [baseRate, setBaseRate] = useState(15);
+
+    const handleAdd = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!firstName.trim() || !lastName.trim()) return;
+        addEmployee(firstName, lastName, role, baseRate);
+        setFirstName('');
+        setLastName('');
+    };
+
+    return (
+        <section className="cost-config-section">
+        <h2>Employee Registry</h2>
+
+        {/* Add Employee Form */}
+        <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem', alignItems: 'end' }}>
+        <div className="form-group">
+        <label>First Name</label>
+        <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required />
+        </div>
+        <div className="form-group">
+        <label>Last Name</label>
+        <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required />
+        </div>
+        <div className="form-group">
+        <label>Role</label>
+        <select value={role} onChange={e => setRole(e.target.value as RoleType)}>
+        {ROLES.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
+        </select>
+        </div>
+        <div className="form-group">
+        <label>Base Rate ($/hr)</label>
+        <input type="number" min="0" step="0.50" value={baseRate} onChange={e => setBaseRate(Number(e.target.value))} />
+        </div>
+        <button type="submit" className="btn">Add Employee</button>
+        </form>
+
+        {/* Employee List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {employees.length === 0 ? (
+            <p style={{ color: '#666', fontStyle: 'italic' }}>No employees added yet.</p>
+        ) : (
+            employees.map(emp => (
+                <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px' }}>
+                <div>
+                <strong>{emp.firstName} {emp.lastName}</strong>
+                <span style={{ marginLeft: '10px', fontSize: '0.85rem', color: '#666' }}>{emp.role}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ fontSize: '0.85rem', color: '#666' }}>$</span>
+                <input
+                type="number"
+                style={{ width: '70px', padding: '4px 8px' }}
+                value={emp.baseRate}
+                onChange={e => updateEmployee(emp.id, { baseRate: Number(e.target.value) })}
+                />
+                <span style={{ fontSize: '0.85rem', color: '#666' }}>/hr</span>
+                </div>
+                <button
+                className="delete-btn"
+                style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                onClick={() => deleteEmployee(emp.id)}
+                >
+                Remove
+                </button>
+                </div>
+                </div>
+            ))
+        )}
+        </div>
+        </section>
+    );
+}

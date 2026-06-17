@@ -1,18 +1,24 @@
 // src/components/OverallSummary.tsx
 
 import { useAppContext } from '../context/AppContext';
+import { useEmployees } from '../context/EmployeeContext';
 import { calculateEntryCost } from '../utils/calculations';
 
 export default function OverallSummary() {
     const { entries, settings } = useAppContext();
+    const { employees } = useEmployees();
 
     const completedEntries = entries.filter(e => e.clockOut);
     const totalHours = completedEntries.reduce((sum, e) => sum + e.totalHours, 0);
 
-    // Count the total number of entries/rows
-    const headcountTally = entries.length;
+    // Count unique employee IDs for a perfect headcount tally
+    const uniqueEmployees = new Set(entries.map(e => e.employeeId)).size;
 
-    const totalCost = completedEntries.reduce((sum, e) => sum + calculateEntryCost(e, settings), 0);
+    const totalCost = completedEntries.reduce((sum, entry) => {
+        const employee = employees.find(emp => emp.id === entry.employeeId);
+        const rate = employee ? employee.baseRate : 0;
+        return sum + calculateEntryCost(entry, rate, settings);
+    }, 0);
 
     return (
         <section className="overall-summary-section">
@@ -24,7 +30,7 @@ export default function OverallSummary() {
         </div>
         <div className="summary-card">
         <h3>Headcount Tally</h3>
-        <div className="summary-value">{headcountTally}</div>
+        <div className="summary-value">{uniqueEmployees}</div>
         </div>
         <div className="summary-card highlight-card">
         <h3>Total Labor Cost*</h3>

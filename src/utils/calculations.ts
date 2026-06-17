@@ -23,13 +23,12 @@ export function calculateHours(
     return Math.round(totalHours * 100) / 100;
 }
 
-export function calculateEntryCost(entry: TimeEntry, settings: AppSettings): number {
+export function calculateEntryCost(entry: TimeEntry, baseRate: number, settings: AppSettings): number {
     if (!entry.clockOut) return 0;
 
-    const rate = settings.wages[entry.category] ?? 0;
     const multiplier = entry.isOvertime ? settings.overtimeMultiplier : 1;
 
-    return entry.totalHours * rate * multiplier;
+    return entry.totalHours * baseRate * multiplier;
 }
 
 export function calculateHourlyDistribution(

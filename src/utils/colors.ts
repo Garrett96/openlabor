@@ -1,14 +1,14 @@
 // src/utils/colors.ts
 
-import { CategoryType, CATEGORIES } from '../types';
+import { RoleType, ROLES } from '../types';
 
-export interface CategoryColor {
+export interface RoleColor {
     bg: string;
     border: string;
     text: string;
 }
 
-export const COLOR_PALETTE: CategoryColor[] = [
+export const COLOR_PALETTE: RoleColor[] = [
     { bg: '#e0e7ff', border: '#4f46e5', text: '#1e3a8a' }, // Indigo
 { bg: '#d1fae5', border: '#059669', text: '#064e3b' }, // Emerald
 { bg: '#fef3c7', border: '#d97706', text: '#78350f' }, // Amber
@@ -17,11 +17,11 @@ export const COLOR_PALETTE: CategoryColor[] = [
 { bg: '#f3e8ff', border: '#9333ea', text: '#581c87' }, // Purple
 ];
 
-export function generateCategoryColors(): Record<CategoryType, CategoryColor> {
-    const shuffled = [...COLOR_PALETTE].sort(() => Math.random() - 0.5).slice(0, CATEGORIES.length);
+export function generateRoleColors(): Record<RoleType, RoleColor> {
+    const shuffled = [...COLOR_PALETTE].sort(() => Math.random() - 0.5).slice(0, ROLES.length);
 
-    return CATEGORIES.reduce((acc, cat, idx) => {
-        acc[cat.key] = shuffled[idx];
+    return ROLES.reduce((acc, role, idx) => {
+        acc[role.key] = shuffled[idx];
         return acc;
-    }, {} as Record<CategoryType, CategoryColor>);
+    }, {} as Record<RoleType, RoleColor>);
 }

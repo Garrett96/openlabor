@@ -2,37 +2,29 @@
 
 import { useState, FormEvent } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { useToast } from '../context/ToastContext'; // Added
-import { CATEGORIES, CategoryType } from '../types';
+import { useEmployees } from '../context/EmployeeContext';
+import { useToast } from '../context/ToastContext';
 import SmartTimeInput from './SmartTimeInput';
+import EmployeeSearch from './EmployeeSearch'; // Added
 
 export default function EntryForm() {
     const { addEntry, settings } = useAppContext();
-    const { showToast } = useToast(); // Added
+    const { employees } = useEmployees();
+    const { showToast } = useToast();
 
-    const [name, setName] = useState('');
-    const [category, setCategory] = useState<CategoryType>('Staff');
+    const [employeeId, setEmployeeId] = useState('');
     const [clockIn, setClockIn] = useState('');
     const [clockOut, setClockOut] = useState('');
     const [breakTime, setBreakTime] = useState(0);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+        if (!employeeId) { showToast('Please select an employee', 'error'); return; }
+        if (!clockIn) { showToast('Clock In is required', 'error'); return; }
 
-        // Validation with Toasts
-        if (!name.trim()) {
-            showToast('Name is required', 'error');
-            return;
-        }
-        if (!clockIn) {
-            showToast('Clock In is required', 'error');
-            return;
-        }
+        addEntry(employeeId, clockIn, clockOut || null, breakTime);
 
-        addEntry(name, category, clockIn, clockOut || null, breakTime);
-
-        // Reset form
-        setName('');
+        setEmployeeId('');
         setClockIn('');
         setClockOut('');
         setBreakTime(0);
@@ -43,17 +35,14 @@ export default function EntryForm() {
         <h2>Add Time Entry</h2>
         <form id="timeEntryForm" onSubmit={handleSubmit}>
         <div className="form-group">
-        <label htmlFor="name">Name</label>
-        <input type="text" id="name" required value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-
-        <div className="form-group">
-        <label htmlFor="category">Category</label>
-        <select id="category" required value={category} onChange={(e) => setCategory(e.target.value as CategoryType)}>
-        {CATEGORIES.map(cat => (
-            <option key={cat.key} value={cat.key}>{cat.label}</option>
-        ))}
-        </select>
+        <label>Employee</label>
+        {/* Replaced <select> with EmployeeSearch */}
+        <EmployeeSearch
+        employees={employees}
+        value={employeeId}
+        onChange={setEmployeeId}
+        placeholder="Type to search employees..."
+        />
         </div>
 
         <div className="form-group">
