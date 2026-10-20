@@ -16,6 +16,8 @@ OpenLabor is a free and open source hourly-workforce analytics platform that ass
 - **Data Control** — No vendor lock-in. Export as JSON, CSV, or POST to your own endpoint.
 - **Quality of life UX** — Built with simplicity and usability in mind.
 
+---
+
 ### License
 
 OpenLabor is released under the [Unlicense](https://unlicense.org/).
