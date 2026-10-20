@@ -6,11 +6,10 @@ import { dataStore } from '../data/store';
 
 interface EmployeeContextType {
     employees: Employee[];
-    addEmployee: (firstName: string, lastName: string, role: RoleType, baseRate: number) => void;
+    addEmployee: (firstName: string, lastName: string, role: RoleType, baseRate: number, id?: string) => void;
     updateEmployee: (id: string, updates: Partial<Employee>) => void;
     deleteEmployee: (id: string) => void;
 }
-
 const EmployeeContext = createContext<EmployeeContextType | undefined>(undefined);
 
 export function EmployeeProvider({ children }: { children: ReactNode }) {
@@ -32,9 +31,9 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
         }
     }, [employees, isLoaded]);
 
-    const addEmployee = (firstName: string, lastName: string, role: RoleType, baseRate: number) => {
+    const addEmployee = (firstName: string, lastName: string, role: RoleType, baseRate: number, id?: string) => {
         const newEmployee: Employee = {
-            id: crypto.randomUUID(), // Modern, secure UUID generation
+            id: id || crypto.randomUUID(), // Use provided ID or generate one
             firstName,
             lastName,
             role,

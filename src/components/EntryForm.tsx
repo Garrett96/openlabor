@@ -5,26 +5,50 @@ import { useAppContext } from '../context/AppContext';
 import { useEmployees } from '../context/EmployeeContext';
 import { useToast } from '../context/ToastContext';
 import SmartTimeInput from './SmartTimeInput';
-import EmployeeSearch from './EmployeeSearch'; // Added
+import EmployeeSearch from './EmployeeSearch';
 
 export default function EntryForm() {
     const { addEntry, settings } = useAppContext();
-    const { employees } = useEmployees();
+    const { employees, addEmployee } = useEmployees();
     const { showToast } = useToast();
 
     const [employeeId, setEmployeeId] = useState('');
+    const [searchText, setSearchText] = useState(''); // Tracks raw typing
     const [clockIn, setClockIn] = useState('');
     const [clockOut, setClockOut] = useState('');
     const [breakTime, setBreakTime] = useState(0);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        if (!employeeId) { showToast('Please select an employee', 'error'); return; }
-        if (!clockIn) { showToast('Clock In is required', 'error'); return; }
+        let finalEmployeeId = employeeId;
 
-        addEntry(employeeId, clockIn, clockOut || null, breakTime);
+        // SMART INTAKE: If no employee is selected, but text was typed, create them!
+        if (!finalEmployeeId && searchText.trim()) {
+            const parts = searchText.trim().split(/\s+/);
+            const firstName = parts[0];
+            const lastName = parts.length > 1 ? parts.slice(1).join(' ') : 'Unknown';
+
+            // Generate ID, add to roster as Temp, default $15/hr
+            const newId = crypto.randomUUID();
+            addEmployee(firstName, lastName, 'Temp', 15.00, newId);
+            finalEmployeeId = newId;
+
+            showToast(`Added ${firstName} ${lastName} to roster`, 'success');
+        }
+
+        if (!finalEmployeeId) {
+            showToast('Please select or type an employee name', 'error');
+            return;
+        }
+        if (!clockIn) {
+            showToast('Clock In is required', 'error');
+            return;
+        }
+
+        addEntry(finalEmployeeId, clockIn, clockOut || null, breakTime);
 
         setEmployeeId('');
+        setSearchText('');
         setClockIn('');
         setClockOut('');
         setBreakTime(0);
@@ -36,12 +60,12 @@ export default function EntryForm() {
         <form id="timeEntryForm" onSubmit={handleSubmit}>
         <div className="form-group">
         <label>Employee</label>
-        {/* Replaced <select> with EmployeeSearch */}
         <EmployeeSearch
         employees={employees}
         value={employeeId}
         onChange={setEmployeeId}
-        placeholder="Type to search employees..."
+        onTextChange={setSearchText} // <-- ADDED
+        placeholder="Type name to search or add new..."
         />
         </div>
 
@@ -57,15 +81,7 @@ export default function EntryForm() {
 
         <div className="form-group">
         <label htmlFor="breakTime">Total Break Period [minutes]</label>
-        <input
-        type="number"
-        id="breakTime"
-        min="0"
-        step="15"
-        value={breakTime}
-        onChange={(e) => setBreakTime(Number(e.target.value))}
-        className="table-time-input"
-        />
+        <input type="number" id="breakTime" min="0" step="15" value={breakTime} onChange={(e) => setBreakTime(Number(e.target.value))} className="table-time-input" />
         </div>
 
         <button type="submit" className="btn">Add Entry</button>

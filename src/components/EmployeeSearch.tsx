@@ -5,12 +5,13 @@ import { Employee } from '../types';
 
 interface EmployeeSearchProps {
     employees: Employee[];
-    value: string; // The selected employeeId
+    value: string;
     onChange: (id: string) => void;
     placeholder?: string;
+    onTextChange?: (text: string) => void;
 }
 
-export default function EmployeeSearch({ employees, value, onChange, placeholder }: EmployeeSearchProps) {
+export default function EmployeeSearch({ employees, value, onChange, placeholder, onTextChange }: EmployeeSearchProps) {
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -53,8 +54,8 @@ export default function EmployeeSearch({ employees, value, onChange, placeholder
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(e.target.value);
         setIsOpen(true);
-        // If they clear the text, clear the selection
         if (e.target.value === '') onChange('');
+        if (onTextChange) onTextChange(e.target.value);
     };
 
         return (
