@@ -9,10 +9,10 @@ interface SmartTimeInputProps {
     className?: string;
     placeholder?: string;
     onKeyDown?: (e: React.KeyboardEvent) => void;
-    onClick?: (e: React.MouseEvent) => void;
+    // onClick?: (e: React.MouseEvent) => void;
     onSaveWithFormat?: (formattedValue: string) => void;
 }
-export default function SmartTimeInput({ value, onChange, format, className, placeholder, onKeyDown, onClick, onSaveWithFormat }: SmartTimeInputProps) {
+export default function SmartTimeInput({ value, onChange, format, className, placeholder, onClick, onSaveWithFormat }: SmartTimeInputProps) {
     const [text, setText] = useState('');
 
     // Convert internal 24h value to display format
