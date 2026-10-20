@@ -115,6 +115,9 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
         placeholder={placeholder || (format === '12h' ? '2:30 PM' : '14:30')}
         style={{
             fontVariantNumeric: 'tabular-nums',
+            width: '100%',
+            minWidth: '80px',
+            boxSizing: 'border-box'
         }}
         />
     );

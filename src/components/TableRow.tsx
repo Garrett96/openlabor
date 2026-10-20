@@ -77,11 +77,12 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             <tr className={isActive ? 'active-shift' : ''} onClick={onToggleEdit} style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}>
             <td>{employee ? `${employee.firstName}${employee.lastName ? ' ' + employee.lastName : ''}` : 'Unknown Employee'}</td>
             <td>{employee?.role || 'Unknown'}</td>
-            <td onClick={(e) => e.stopPropagation()}>
+            <td onClick={(e) => e.stopPropagation()} style={{ minWidth: '120px' }}>
             <SmartTimeInput value={editClockIn} onChange={setEditClockIn} format={settings.timeFormat} className="table-time-input" />
             </td>
-            <td onClick={(e) => e.stopPropagation()}>
+            <td onClick={(e) => e.stopPropagation()} style={{ minWidth: '120px' }}>
             <SmartTimeInput value={editClockOut} onChange={setEditClockOut} format={settings.timeFormat} className="table-time-input" />
+            </td>
             </td>
             <td onClick={(e) => e.stopPropagation()}>
             <input type="number" className="table-time-input" style={{ width: '60px' }} value={editBreak} min="0" onChange={e => setEditBreak(Number(e.target.value))} onKeyDown={handleKeyDown} />
