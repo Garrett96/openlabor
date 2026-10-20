@@ -26,7 +26,7 @@ export default function EntryForm() {
         if (!finalEmployeeId && searchText.trim()) {
             const parts = searchText.trim().split(/\s+/);
             const firstName = parts[0];
-            const lastName = parts.length > 1 ? parts.slice(1).join(' ') : 'Unknown';
+            const lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
 
             // Generate ID, add to roster as Temp, default $15/hr
             const newId = crypto.randomUUID();

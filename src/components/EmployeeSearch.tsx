@@ -103,22 +103,13 @@ export default function EmployeeSearch({ employees, value, onChange, placeholder
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
                     >
-                    <span>{emp.firstName} {emp.lastName}</span>
+                    <span>{emp.firstName}{emp.lastName ? ` ${emp.lastName}` : ''}</span>
                     <span style={{ color: '#666', fontSize: '0.8rem' }}>{emp.role}</span>
                     </li>
                 ))}
                 </ul>
             )}
 
-            {isOpen && query && filteredEmployees.length === 0 && (
-                <div style={{
-                    position: 'absolute', top: '100%', left: 0, right: 0,
-                    padding: '8px 12px', backgroundColor: 'white', border: '1px solid var(--border)',
-                                                                   borderRadius: '6px', fontSize: '0.85rem', color: '#666', marginTop: '4px', zIndex: 50
-                }}>
-                No employees found. Add them in the Roster tab.
-                </div>
-            )}
             </div>
         );
 }

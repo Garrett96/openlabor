@@ -75,10 +75,8 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
     if (isEditing) {
         return (
             <tr className={isActive ? 'active-shift' : ''} onClick={onToggleEdit} style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}>
-            {/* Employee is now strictly read-only in edit mode */}
-            <td>{employee ? `${employee.firstName} ${employee.lastName}` : 'Unknown Employee'}</td>
+            <td>{employee ? `${employee.firstName}${employee.lastName ? ' ' + employee.lastName : ''}` : 'Unknown Employee'}</td>
             <td>{employee?.role || 'Unknown'}</td>
-
             <td onClick={(e) => e.stopPropagation()}>
             <SmartTimeInput value={editClockIn} onChange={setEditClockIn} format={settings.timeFormat} className="table-time-input" />
             </td>
@@ -115,7 +113,7 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
     // --- DISPLAY MODE ---
     return (
         <tr className={isActive ? 'active-shift' : ''} onClick={onToggleEdit} style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}>
-        <td>{employee ? `${employee.firstName} ${employee.lastName}` : 'Unknown Employee'}</td>
+        <td>{employee ? `${employee.firstName}${employee.lastName ? ' ' + employee.lastName : ''}` : 'Unknown Employee'}</td>
         <td>{employee?.role || 'Unknown'}</td>
         <td>{formatTimeDisplay(entry.clockIn, settings.timeFormat)}</td>
         <td onClick={(e) => e.stopPropagation()}>

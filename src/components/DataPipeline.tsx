@@ -22,7 +22,7 @@ export default function DataPipeline() {
         const rows = entries.map(entry => {
             const emp = employees.find(e => e.id === entry.employeeId);
             const firstName = emp?.firstName || 'Unknown';
-            const lastName = emp?.lastName || 'Employee';
+            const lastName = emp?.lastName || '';
             const role = emp?.role || 'Unknown';
             const baseRate = emp?.baseRate || 0;
             const cost = calculateEntryCost(entry, baseRate, settings).toFixed(2);

@@ -7,7 +7,7 @@ export type EmployeeStatus = 'Active' | 'Inactive';
 export interface Employee {
     id: string; // UUID
     firstName: string;
-    lastName: string;
+    lastName?: string;
     role: RoleType;
     baseRate: number; // Hourly rate specific to this employee
     status: EmployeeStatus;

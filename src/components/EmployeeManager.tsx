@@ -40,7 +40,7 @@ export default function EmployeeManager() {
         </div>
         <div className="form-group">
         <label>Last Name</label>
-        <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required />
+        <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} />
         </div>
         <div className="form-group">
         <label>Role</label>
@@ -63,7 +63,7 @@ export default function EmployeeManager() {
             employees.map(emp => (
                 <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                <strong>{emp.firstName} {emp.lastName}</strong>
+                <strong>{emp.firstName}{emp.lastName ? ` ${emp.lastName}` : ''}</strong>
 
                 {/* INLINE ROLE EDITOR */}
                 {editingRoleId === emp.id ? (
