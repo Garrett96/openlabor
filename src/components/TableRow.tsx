@@ -73,41 +73,54 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
 
     // --- EDIT MODE ---
     if (isEditing) {
+
+        // Helper to save using the direct formatted string from the input
+        const saveWithFormattedTime = (field: 'clockIn' | 'clockOut', formattedVal: string) => {
+            const updates = field === 'clockIn'
+            ? { clockIn: formattedVal }
+            : { clockOut: formattedVal === '' ? null : formattedVal };
+
+            updateEntry(entry.id, {
+                ...updates,
+                breakTime: editBreak,
+            });
+            onToggleEdit();
+        };
+
         return (
             <tr
             className={isActive ? 'active-shift' : ''}
-            onClick={onToggleEdit} // Clicking ANYWHERE on the row now cleanly exits edit mode and auto-saves
+            onClick={onToggleEdit}
             style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}
             >
-            {/* Employee - Read Only, but clicking it exits edit mode */}
             <td>{employee ? `${employee.firstName}${employee.lastName ? ' ' + employee.lastName : ''}` : 'Unknown Employee'}</td>
             <td>{employee?.role || 'Unknown'}</td>
 
-            {/* Clock In - Clicking the input focuses it. Clicking the cell background exits edit mode. */}
+            {/* Clock In - Passes the formatted string directly to save */}
             <td style={{ minWidth: '120px' }}>
             <SmartTimeInput
             value={editClockIn}
             onChange={setEditClockIn}
             format={settings.timeFormat}
             className="table-time-input"
-            onKeyDown={handleKeyDown} // Hitting Enter now saves and exits!
-            onClick={(e) => e.stopPropagation()} // Clicking the input doesn't exit edit mode
+            onSaveWithFormat={(val) => saveWithFormattedTime('clockIn', val)}
+            onClick={(e) => e.stopPropagation()}
             />
             </td>
 
-            {/* Clock Out */}
+            {/* Clock Out - Passes the formatted string directly to save */}
             <td style={{ minWidth: '120px' }}>
             <SmartTimeInput
             value={editClockOut}
             onChange={setEditClockOut}
             format={settings.timeFormat}
             className="table-time-input"
-            onKeyDown={handleKeyDown}
+            onSaveWithFormat={(val) => saveWithFormattedTime('clockOut', val)}
             onClick={(e) => e.stopPropagation()}
             />
             </td>
 
-            {/* Break Time */}
+            {/* Break Time - Standard save */}
             <td>
             <input
             type="number"
@@ -121,10 +134,7 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             />
             </td>
 
-            {/* Total Hours - Read Only */}
             <td>{entry.totalHours} hrs</td>
-
-            {/* Overtime Checkbox */}
             <td style={{ textAlign: 'center' }}>
             <input
             type="checkbox"
@@ -133,11 +143,7 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             onClick={(e) => e.stopPropagation()}
             />
             </td>
-
-            {/* Cost - Read Only */}
             <td>${calculateEntryCost(entry, employee?.baseRate || 0, settings).toFixed(2)}</td>
-
-            {/* Save Button */}
             <td>
             <button
             className="btn btn-secondary"

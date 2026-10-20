@@ -10,9 +10,9 @@ interface SmartTimeInputProps {
     placeholder?: string;
     onKeyDown?: (e: React.KeyboardEvent) => void;
     onClick?: (e: React.MouseEvent) => void;
+    onSaveWithFormat?: (formattedValue: string) => void;
 }
-
-export default function SmartTimeInput({ value, onChange, format, className, placeholder, onKeyDown, onClick }: SmartTimeInputProps) {
+export default function SmartTimeInput({ value, onChange, format, className, placeholder, onKeyDown, onClick, onSaveWithFormat }: SmartTimeInputProps) {
     const [text, setText] = useState('');
 
     // Convert internal 24h value to display format
@@ -103,8 +103,25 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            handleBlur();
-            if (onKeyDown) onKeyDown(e);
+
+            // Force formatting and get the clean value
+            let finalVal = text;
+            if (/^[0-2][0-9]$/.test(text)) {
+                finalVal = `${text}:00`;
+            } else if (!/^[0-2][0-9]:[0-5][0-9]$/.test(text)) {
+                finalVal = value || '';
+            }
+
+            // If valid, push it up to the parent immediately
+            if (/^[0-2][0-9]:[0-5][0-9]$/.test(finalVal)) {
+                if (onSaveWithFormat) {
+                    onSaveWithFormat(finalVal); // <-- Bypasses React state delay entirely!
+                } else {
+                    onChange(finalVal);
+                }
+            } else {
+                handleBlur(); // Revert if invalid
+            }
         }
     };
 
