@@ -12,7 +12,7 @@ export default function EmployeeManager() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [role, setRole] = useState<RoleType>('Staff');
-    const [baseRate, setBaseRate] = useState(15);
+    const [baseRate, setBaseRate] = useState(20);
 
     // State for inline role editing
     const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
