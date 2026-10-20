@@ -164,7 +164,7 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
     }
 
     // --- DISPLAY MODE ---
-    const cost = calculateEntryCost(entry, settings);
+    const cost = calculateEntryCost(entry, employee?.baseRate || 0, settings);
 
     return (
         <tr
