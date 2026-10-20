@@ -164,24 +164,87 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
     }
 
     // --- DISPLAY MODE ---
+    const cost = calculateEntryCost(entry, settings);
+
     return (
-        <tr className={isActive ? 'active-shift' : ''} onClick={onToggleEdit} style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}>
+        <tr
+        className={isActive ? 'active-shift' : ''}
+        onClick={onToggleEdit} // Clicking ANYWHERE on the row enters edit mode
+        style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}
+        >
+        {/* Employee - Read Only */}
         <td>{employee ? `${employee.firstName}${employee.lastName ? ' ' + employee.lastName : ''}` : 'Unknown Employee'}</td>
         <td>{employee?.role || 'Unknown'}</td>
+
+        {/* Clock In - Read Only */}
         <td>{formatTimeDisplay(entry.clockIn, settings.timeFormat)}</td>
-        <td onClick={(e) => e.stopPropagation()}>
-        {isActive ? <SmartTimeInput value="" onChange={(val) => updateEntry(entry.id, { clockOut: val === '' ? null : val })} format={settings.timeFormat} className="table-time-input" /> : formatTimeDisplay(entry.clockOut, settings.timeFormat)}
+
+        {/* Clock Out - Interactive if active */}
+        <td>
+        {isActive ? (
+            <SmartTimeInput
+            value=""
+            onChange={(val) => updateEntry(entry.id, { clockOut: val === '' ? null : val })}
+            format={settings.timeFormat}
+            className="table-time-input"
+            onClick={(e) => e.stopPropagation()} // Stop click from exiting edit mode
+            />
+        ) : (
+            formatTimeDisplay(entry.clockOut, settings.timeFormat)
+        )}
         </td>
-        <td onClick={(e) => e.stopPropagation()}>
-        {isActive ? <input type="number" className="table-time-input" style={{ width: '60px' }} value={entry.breakTime} min="0" step="15" onChange={(e) => updateEntry(entry.id, { breakTime: Number(e.target.value) })} /> : `${entry.breakTime} min`}
+
+        {/* Break Time - Interactive if active */}
+        <td>
+        {isActive ? (
+            <input
+            type="number"
+            className="table-time-input"
+            style={{ width: '60px' }}
+            value={entry.breakTime}
+            min="0"
+            step="15"
+            onChange={(e) => updateEntry(entry.id, { breakTime: Number(e.target.value) })}
+            onClick={(e) => e.stopPropagation()} // Stop click from exiting edit mode
+            />
+        ) : (
+            `${entry.breakTime} min`
+        )}
         </td>
+
+        {/* Total Hours - Read Only */}
         <td>{isActive ? <em style={{color: '#666'}}>Active</em> : `${entry.totalHours} hrs`}</td>
-        <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
-        {isActive ? '-' : <input type="checkbox" checked={entry.isOvertime} onChange={(e) => updateEntry(entry.id, { isOvertime: e.target.checked })} />}
+
+        {/* Overtime Checkbox - Interactive */}
+        <td style={{ textAlign: 'center' }}>
+        {isActive ? '-' : (
+            <input
+            type="checkbox"
+            checked={entry.isOvertime}
+            onChange={(e) => updateEntry(entry.id, { isOvertime: e.target.checked })}
+            onClick={(e) => e.stopPropagation()} // Stop click from exiting edit mode
+            />
+        )}
         </td>
-        <td>{isActive ? '-' : `$${calculateEntryCost(entry, employee?.baseRate || 0, settings).toFixed(2)}`}</td>
-        <td onClick={(e) => e.stopPropagation()}>
-        <button className="delete-btn" onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); showToast("Entry deleted", "error", true, () => { restoreEntry(entry); showToast("Entry restored", "success"); }); }}>Delete</button>
+
+        {/* Cost - Read Only */}
+        <td>{isActive ? '-' : `$${cost.toFixed(2)}`}</td>
+
+        {/* Delete Button - Interactive */}
+        <td>
+        <button
+        className="delete-btn"
+        onClick={(e) => {
+            e.stopPropagation();
+            deleteEntry(entry.id);
+            showToast("Entry deleted", "error", true, () => {
+                restoreEntry(entry);
+                showToast("Entry restored", "success");
+            });
+        }}
+        >
+        Delete
+        </button>
         </td>
         </tr>
     );

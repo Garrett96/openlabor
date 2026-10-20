@@ -100,13 +100,21 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleBlur();
+            if (onKeyDown) onKeyDown(e);
+        }
+    };
+
     return (
         <input
         type="text"
         value={text}
         onChange={handleChange}
         onBlur={handleBlur}
-        onKeyDown={onKeyDown}
+        onKeyDown={handleKeyDown}
         onClick={onClick}
         className={className}
         placeholder={placeholder || (format === '12h' ? '2:30 PM' : '14:30')}
