@@ -1,6 +1,6 @@
 // src/components/TableRow.tsx
 
-import { useState, KeyboardEvent, useEffect } from 'react';
+import { useState, KeyboardEvent, useEffect, useRef } from 'react';
 import { TimeEntry } from '../types';
 import { useAppContext } from '../context/AppContext';
 import { useEmployees } from '../context/EmployeeContext';
@@ -25,12 +25,18 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
     const isActive = !entry.clockOut;
     const color = employee ? roleColors[employee.role] : { border: '#ccc', bg: '#f8fafc' };
 
-    // REMOVED: editEmployeeId state. We only edit times and breaks now.
     const [editClockIn, setEditClockIn] = useState(entry.clockIn);
     const [editClockOut, setEditClockOut] = useState(entry.clockOut ?? '');
     const [editBreak, setEditBreak] = useState(entry.breakTime);
 
-    // Sync state when entering edit mode
+    const latestClockIn = useRef(editClockIn);
+    const latestClockOut = useRef(editClockOut);
+    const latestBreak = useRef(editBreak);
+
+    useEffect(() => { latestClockIn.current = editClockIn; }, [editClockIn]);
+    useEffect(() => { latestClockOut.current = editClockOut; }, [editClockOut]);
+    useEffect(() => { latestBreak.current = editBreak; }, [editBreak]);
+
     useEffect(() => {
         if (isEditing) {
             setEditClockIn(entry.clockIn);
@@ -39,20 +45,19 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
         }
     }, [isEditing, entry.id]);
 
-    // Auto-save on exit edit mode
     useEffect(() => {
         if (isEditing) {
             return () => {
-                if (editClockIn) {
+                if (latestClockIn.current) {
                     updateEntry(entry.id, {
-                        clockIn: editClockIn,
-                        clockOut: editClockOut === '' ? null : editClockOut,
-                        breakTime: editBreak,
+                        clockIn: latestClockIn.current,
+                        clockOut: latestClockOut.current === '' ? null : latestClockOut.current,
+                        breakTime: latestBreak.current,
                     });
                 }
             };
         }
-    }, [isEditing, editClockIn, editClockOut, editBreak, entry.id, updateEntry]);
+    }, [isEditing, entry.id, updateEntry]);
 
     const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Enter') {

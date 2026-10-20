@@ -105,27 +105,33 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
         if (e.key === 'Enter') {
             e.preventDefault();
 
-            // Force formatting and get the clean value
+            // Synchronously calculate the final formatted value
+            let raw = text.replace(/[^0-9]/g, '');
             let finalVal = text;
-            if (/^[0-2][0-9]$/.test(text)) {
-                finalVal = `${text}:00`;
-            } else if (!/^[0-2][0-9]:[0-5][0-9]$/.test(text)) {
-                finalVal = value || '';
+
+            if (/^[0-2][0-9]$/.test(raw)) {
+                finalVal = `${raw}:00`;
+            } else if (raw.length === 3) {
+                const h = parseInt(raw[0], 10);
+                const m = parseInt(raw.slice(1), 10);
+                finalVal = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+            } else if (raw.length >= 4) {
+                const h = Math.min(23, parseInt(raw.slice(0, 2), 10));
+                const m = Math.min(59, parseInt(raw.slice(2, 4), 10));
+                finalVal = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
             }
 
-            // If valid, push it up to the parent immediately
+            // If valid, save it immediately
             if (/^[0-2][0-9]:[0-5][0-9]$/.test(finalVal)) {
+                onChange(finalVal); // Update parent state
                 if (onSaveWithFormat) {
-                    onSaveWithFormat(finalVal); // <-- Bypasses React state delay entirely!
-                } else {
-                    onChange(finalVal);
+                    onSaveWithFormat(finalVal); // Trigger table save
                 }
             } else {
                 handleBlur(); // Revert if invalid
             }
         }
     };
-
     return (
         <input
         type="text"
