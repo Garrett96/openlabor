@@ -28,9 +28,9 @@ export default function EntryForm() {
             const firstName = parts[0];
             const lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
 
-            // Generate ID, add to roster as Temp, default $15/hr
+            // Generate ID, add to roster as Temp, default $20/hr
             const newId = crypto.randomUUID();
-            addEmployee(firstName, lastName, 'Temp', 15.00, newId);
+            addEmployee(firstName, lastName, 'Temp', 20.00, newId);
             finalEmployeeId = newId;
 
             showToast(`Added ${firstName} ${lastName} to roster`, 'success');
