@@ -20,7 +20,7 @@ function App() {
     <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
     <div>
     <h1 style={{ marginBottom: '0.25rem' }}>OpenLabor</h1>
-    <p style={{ margin: 0 }}>Hourly-Workforce Analytics Platform</p>
+    <p style={{ margin: 0 }}>Hourly-Workforce Analytics Dashboard</p>
     </div>
 
     {/* Navigation Tabs */}
