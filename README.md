@@ -1,8 +1,12 @@
 # OpenLabor
 
+OpenLabor is a free and open source hourly-workforce analytics platform that assists with timesheet tracking, roster management, and gives leadership improved visibility into labor utilization, costs, and resource allocation across disconnected data sources, without the overhead of payroll software.
+
+---
+
 <img width="1518" height="842" alt="image" src="https://github.com/user-attachments/assets/81d4d07c-0ead-4d15-8ec5-4a6093221357" />
 
-OpenLabor is a free and open source hourly-workforce analytics platform that assists with timesheet tracking, roster management, and gives leadership improved visibility into labor utilization, costs, and resource allocation across disconnected data sources, without the overhead of payroll software.
+---
 
 ### Features
 
