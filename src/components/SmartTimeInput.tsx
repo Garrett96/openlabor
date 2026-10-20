@@ -100,12 +100,6 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            handleBlur();
-        }
-    };
-
     return (
         <input
         type="text"
