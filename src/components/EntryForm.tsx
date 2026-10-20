@@ -57,7 +57,15 @@ export default function EntryForm() {
 
         <div className="form-group">
         <label htmlFor="breakTime">Total Break Period [minutes]</label>
-        <input type="number" id="breakTime" min="0" step="15" value={breakTime} onChange={(e) => setBreakTime(Number(e.target.value))} />
+        <input
+        type="number"
+        id="breakTime"
+        min="0"
+        step="15"
+        value={breakTime}
+        onChange={(e) => setBreakTime(Number(e.target.value))}
+        className="table-time-input"
+        />
         </div>
 
         <button type="submit" className="btn">Add Entry</button>
