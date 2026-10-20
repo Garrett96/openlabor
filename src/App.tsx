@@ -70,7 +70,7 @@ function App() {
 
     <footer>
     <a href="https://unlicense.org/" target="_blank" rel="noreferrer">Unlicense</a>
-    <a href="https://github.com/Garrett96/openlabor" target="_blank" rel="noreferrer">Source</a>
+    <a href="https://github.com/Garrett96/openlabor-v2" target="_blank" rel="noreferrer">Source</a>
     </footer>
     </div>
   );

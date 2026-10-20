@@ -20,7 +20,7 @@ export default function HourlyChart() {
 
     return (
         <section className="hourly-section">
-        <h2>Hour-over-Hour Distribution</h2>
+        <h2>Labor Utilization by Hour</h2>
         <div className="hourly-container">
         <table className="hourly-table">
         <thead>

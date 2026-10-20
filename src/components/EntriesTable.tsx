@@ -119,7 +119,7 @@ export default function EntriesTable() {
         {entries.length === 0 ? (
             <tr>
             <td colSpan={9} style={{ textAlign: 'center', color: '#666', padding: '2rem' }}>
-            No entries yet. Add one above!
+            No entries yet!
             </td>
             </tr>
         ) : (
