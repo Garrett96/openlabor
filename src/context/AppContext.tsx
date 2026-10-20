@@ -5,7 +5,7 @@ import { TimeEntry, AppSettings } from '../types';
 import { dataStore } from '../data/store';
 import { calculateHours } from '../utils/calculations';
 import { generateRoleColors } from '../utils/colors';
-import { RoleType, ROLES } from '../types';
+import { RoleType } from '../types';
 
 interface AppContextType {
     entries: TimeEntry[];

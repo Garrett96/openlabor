@@ -40,7 +40,7 @@ export default function EntriesTable() {
             return;
         }
 
-        const updates: any = {};
+        const updates: Partial<TimeEntry> = {};
         if (bulkClockIn) updates.clockIn = bulkClockIn;
         if (bulkClockOut) updates.clockOut = bulkClockOut;
 

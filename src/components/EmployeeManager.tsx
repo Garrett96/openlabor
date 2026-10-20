@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useEmployees } from '../context/EmployeeContext';
-import { ROLES, RoleType, Employee } from '../types';
+import { ROLES, RoleType } from '../types';
 
 export default function EmployeeManager() {
     const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
