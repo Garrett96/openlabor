@@ -4,7 +4,7 @@ OpenLabor is a free and open source hourly-workforce analytics platform that ass
 
 ---
 
-[OpenLabor Demo Vid](https://github.com/user-attachments/assets/948eb73c-9c15-4f92-b5d6-232301c43111)
+[openlabor-demo.webm](https://github.com/user-attachments/assets/6021515c-6c03-422c-9f03-d8220ee00693)
 
 ---
 
