@@ -500,3 +500,29 @@ input[type="radio"]:focus {
     box-shadow: none !important;
     outline: none !important;
 }
+
+/* --- Add Time Entry Form Polish --- */
+
+#timeEntryForm {
+display: flex;
+flex-direction: column;
+gap: 1.25rem; /* This creates perfect, equal spacing between every form group */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Perfect, consistent spacing between the label and the input box */
+    margin-bottom: 0 !important; /* Kill any old margins that are causing the awkwardness */
+}
+
+.form-group label {
+    margin-bottom: 0 !important; /* Ensure the label doesn't push the input down unevenly */
+    font-weight: 500;
+}
+
+/* Give the button a little extra breathing room so it doesn't look cramped */
+#timeEntryForm .btn {
+margin-top: 0.5rem;
+width: fit-content; /* Prevents the button from stretching to 100% width awkwardly */
+}
