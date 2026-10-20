@@ -3,14 +3,16 @@
 import { useState, useEffect } from 'react';
 
 interface SmartTimeInputProps {
-    value: string; // Always stored as "HH:MM" 24h format
+    value: string;
     onChange: (value: string) => void;
     format: '12h' | '24h';
     className?: string;
     placeholder?: string;
+    onKeyDown?: (e: React.KeyboardEvent) => void;
+    onClick?: (e: React.MouseEvent) => void;
 }
 
-export default function SmartTimeInput({ value, onChange, format, className, placeholder }: SmartTimeInputProps) {
+export default function SmartTimeInput({ value, onChange, format, className, placeholder, onKeyDown, onClick }: SmartTimeInputProps) {
     const [text, setText] = useState('');
 
     // Convert internal 24h value to display format
@@ -110,7 +112,8 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
         value={text}
         onChange={handleChange}
         onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
+        onKeyDown={onKeyDown}
+        onClick={onClick}
         className={className}
         placeholder={placeholder || (format === '12h' ? '2:30 PM' : '14:30')}
         style={{

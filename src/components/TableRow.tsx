@@ -74,25 +74,75 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
     // --- EDIT MODE ---
     if (isEditing) {
         return (
-            <tr className={isActive ? 'active-shift' : ''} onClick={onToggleEdit} style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}>
+            <tr
+            className={isActive ? 'active-shift' : ''}
+            onClick={onToggleEdit} // Clicking ANYWHERE on the row now cleanly exits edit mode and auto-saves
+            style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}
+            >
+            {/* Employee - Read Only, but clicking it exits edit mode */}
             <td>{employee ? `${employee.firstName}${employee.lastName ? ' ' + employee.lastName : ''}` : 'Unknown Employee'}</td>
             <td>{employee?.role || 'Unknown'}</td>
-            <td onClick={(e) => e.stopPropagation()} style={{ minWidth: '120px' }}>
-            <SmartTimeInput value={editClockIn} onChange={setEditClockIn} format={settings.timeFormat} className="table-time-input" />
+
+            {/* Clock In - Clicking the input focuses it. Clicking the cell background exits edit mode. */}
+            <td style={{ minWidth: '120px' }}>
+            <SmartTimeInput
+            value={editClockIn}
+            onChange={setEditClockIn}
+            format={settings.timeFormat}
+            className="table-time-input"
+            onKeyDown={handleKeyDown} // Hitting Enter now saves and exits!
+            onClick={(e) => e.stopPropagation()} // Clicking the input doesn't exit edit mode
+            />
             </td>
-            <td onClick={(e) => e.stopPropagation()} style={{ minWidth: '120px' }}>
-            <SmartTimeInput value={editClockOut} onChange={setEditClockOut} format={settings.timeFormat} className="table-time-input" />
+
+            {/* Clock Out */}
+            <td style={{ minWidth: '120px' }}>
+            <SmartTimeInput
+            value={editClockOut}
+            onChange={setEditClockOut}
+            format={settings.timeFormat}
+            className="table-time-input"
+            onKeyDown={handleKeyDown}
+            onClick={(e) => e.stopPropagation()}
+            />
             </td>
-            <td onClick={(e) => e.stopPropagation()}>
-            <input type="number" className="table-time-input" style={{ width: '60px' }} value={editBreak} min="0" onChange={e => setEditBreak(Number(e.target.value))} onKeyDown={handleKeyDown} />
+
+            {/* Break Time */}
+            <td>
+            <input
+            type="number"
+            className="table-time-input"
+            style={{ width: '60px' }}
+            value={editBreak}
+            min="0"
+            onChange={e => setEditBreak(Number(e.target.value))}
+            onKeyDown={handleKeyDown}
+            onClick={(e) => e.stopPropagation()}
+            />
             </td>
-            <td onClick={(e) => e.stopPropagation()}>{entry.totalHours} hrs</td>
-            <td onClick={(e) => e.stopPropagation()} style={{ textAlign: 'center' }}>
-            <input type="checkbox" checked={entry.isOvertime} onChange={(e) => updateEntry(entry.id, { isOvertime: e.target.checked })} />
+
+            {/* Total Hours - Read Only */}
+            <td>{entry.totalHours} hrs</td>
+
+            {/* Overtime Checkbox */}
+            <td style={{ textAlign: 'center' }}>
+            <input
+            type="checkbox"
+            checked={entry.isOvertime}
+            onChange={(e) => updateEntry(entry.id, { isOvertime: e.target.checked })}
+            onClick={(e) => e.stopPropagation()}
+            />
             </td>
-            <td onClick={(e) => e.stopPropagation()}>${calculateEntryCost(entry, employee?.baseRate || 0, settings).toFixed(2)}</td>
-            <td onClick={(e) => e.stopPropagation()}>
-            <button className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={(e) => {
+
+            {/* Cost - Read Only */}
+            <td>${calculateEntryCost(entry, employee?.baseRate || 0, settings).toFixed(2)}</td>
+
+            {/* Save Button */}
+            <td>
+            <button
+            className="btn btn-secondary"
+            style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+            onClick={(e) => {
                 e.stopPropagation();
                 if (!editClockIn) {
                     showToast('Clock In is required', 'error');
@@ -104,7 +154,10 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
                     breakTime: editBreak
                 });
                 onToggleEdit();
-            }}>Save</button>
+            }}
+            >
+            Save
+            </button>
             </td>
             </tr>
         );
