@@ -10,7 +10,7 @@ export default function EmployeeManager() {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [role, setRole] = useState<RoleType>('Staff');
-    const [baseRate, setBaseRate] = useState(15);
+    const [baseRate, setBaseRate] = useState(20);
 
     const handleAdd = (e: React.FormEvent) => {
         e.preventDefault();
