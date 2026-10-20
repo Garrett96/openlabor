@@ -9,7 +9,6 @@ interface SmartTimeInputProps {
     className?: string;
     placeholder?: string;
     onKeyDown?: (e: React.KeyboardEvent) => void;
-    // onClick?: (e: React.MouseEvent) => void;
     onSaveWithFormat?: (formattedValue: string) => void;
 }
 export default function SmartTimeInput({ value, onChange, format, className, placeholder, onClick, onSaveWithFormat }: SmartTimeInputProps) {
