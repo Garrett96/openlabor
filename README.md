@@ -1,1 +1,1 @@
-OpenLabor is a free and open source workforce analytics platform that gives leadership improved visibility into labor utilization, costs, and team composition across disconnected data sources, without the overhead of payroll software.
+OpenLabor is a free and open source workforce analytics platform that gives leadership improved visibility into labor utilization, costs, and team composition across disconnected data sources regarding hourly workers, without the overhead of payroll software.
