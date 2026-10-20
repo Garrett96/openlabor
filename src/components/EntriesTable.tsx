@@ -1,5 +1,6 @@
 // src/components/EntriesTable.tsx
 
+import { TimeEntry } from '../types';
 import { useState, useRef, useEffect } from 'react'; // Added useRef and useEffect
 import { useAppContext } from '../context/AppContext';
 import { useToast } from '../context/ToastContext';
@@ -41,8 +42,13 @@ export default function EntriesTable() {
         }
 
         const updates: Partial<TimeEntry> = {};
-        if (bulkClockIn) updates.clockIn = bulkClockIn;
-        if (bulkClockOut) updates.clockOut = bulkClockOut;
+
+        if (bulkClockIn) {
+            updates.clockIn = bulkClockIn;
+        }
+        if (bulkClockOut) {
+            updates.clockOut = bulkClockOut;
+        }
 
         bulkUpdateEntries(updates);
 

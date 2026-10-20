@@ -1,6 +1,6 @@
 // src/components/DataPipeline.tsx
 
-import { useRef } from 'react';
+import { } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useEmployees } from '../context/EmployeeContext';
 import { useToast } from '../context/ToastContext';
@@ -10,7 +10,6 @@ export default function DataPipeline() {
     const { entries, settings, updateSettings } = useAppContext();
     const { employees } = useEmployees();
     const { showToast } = useToast();
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // --- EXPORT CSV ---
     const handleExportCSV = () => {
