@@ -8,7 +8,6 @@ import { useToast } from '../context/ToastContext';
 import { calculateEntryCost } from '../utils/calculations';
 import { formatTimeDisplay } from '../utils/time';
 import SmartTimeInput from './SmartTimeInput';
-// EmployeeSearch import removed since we no longer edit the employee here
 
 interface TableRowProps {
     entry: TimeEntry;
@@ -25,34 +24,46 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
     const isActive = !entry.clockOut;
     const color = employee ? roleColors[employee.role] : { border: '#ccc', bg: '#f8fafc' };
 
-    const [editClockIn, setEditClockIn] = useState(entry.clockIn);
-    const [editClockOut, setEditClockOut] = useState(entry.clockOut ?? '');
-    const [editBreak, setEditBreak] = useState(entry.breakTime);
+    // 1. Standard React State for UI rendering
+    const [editClockIn, setEditClockInState] = useState(entry.clockIn);
+    const [editClockOut, setEditClockOutState] = useState(entry.clockOut ?? '');
+    const [editBreak, setEditBreakState] = useState(entry.breakTime);
 
-    const latestClockIn = useRef(editClockIn);
-    const latestClockOut = useRef(editClockOut);
-    const latestBreak = useRef(editBreak);
+    // 2. Synchronous Ref for Auto-Save (Prevents race conditions)
+    const editData = useRef({
+        clockIn: entry.clockIn,
+        clockOut: entry.clockOut ?? '',
+        breakTime: entry.breakTime
+    });
 
-    useEffect(() => { latestClockIn.current = editClockIn; }, [editClockIn]);
-    useEffect(() => { latestClockOut.current = editClockOut; }, [editClockOut]);
-    useEffect(() => { latestBreak.current = editBreak; }, [editBreak]);
+    // 3. Wrapped Setters (Updates UI and Ref simultaneously)
+    const setEditClockIn = (val: string) => { editData.current.clockIn = val; setEditClockInState(val); };
+    const setEditClockOut = (val: string) => { editData.current.clockOut = val; setEditClockOutState(val); };
+    const setEditBreak = (val: number) => { editData.current.breakTime = val; setEditBreakState(val); };
 
+    // Sync ref when entering edit mode
     useEffect(() => {
         if (isEditing) {
-            setEditClockIn(entry.clockIn);
-            setEditClockOut(entry.clockOut ?? '');
-            setEditBreak(entry.breakTime);
+            editData.current = {
+                clockIn: entry.clockIn,
+                clockOut: entry.clockOut ?? '',
+                breakTime: entry.breakTime
+            };
+            setEditClockInState(entry.clockIn);
+            setEditClockOutState(entry.clockOut ?? '');
+            setEditBreakState(entry.breakTime);
         }
     }, [isEditing, entry.id]);
 
+    // Auto-save on exit edit mode (Uses the synchronous ref, not stale state)
     useEffect(() => {
         if (isEditing) {
             return () => {
-                if (latestClockIn.current) {
+                if (editData.current.clockIn) {
                     updateEntry(entry.id, {
-                        clockIn: latestClockIn.current,
-                        clockOut: latestClockOut.current === '' ? null : latestClockOut.current,
-                        breakTime: latestBreak.current,
+                        clockIn: editData.current.clockIn,
+                        clockOut: editData.current.clockOut === '' ? null : editData.current.clockOut,
+                        breakTime: editData.current.breakTime,
                     });
                 }
             };
@@ -63,35 +74,33 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
         if (e.key === 'Enter') {
             e.preventDefault();
             e.stopPropagation();
-            if (!editClockIn) {
+            if (!editData.current.clockIn) {
                 showToast('Clock In is required', 'error');
                 return;
             }
             updateEntry(entry.id, {
-                clockIn: editClockIn,
-                clockOut: editClockOut === '' ? null : editClockOut,
-                breakTime: editBreak,
+                clockIn: editData.current.clockIn,
+                clockOut: editData.current.clockOut === '' ? null : editData.current.clockOut,
+                breakTime: editData.current.breakTime,
             });
             onToggleEdit();
         }
     };
 
+    // Explicit save for SmartTimeInput Enter key
+    const saveWithFormattedTime = (field: 'clockIn' | 'clockOut', formattedVal: string) => {
+        editData.current[field] = formattedVal; // Sync ref immediately
+
+        updateEntry(entry.id, {
+            clockIn: field === 'clockIn' ? formattedVal : editData.current.clockIn,
+            clockOut: field === 'clockOut' ? (formattedVal === '' ? null : formattedVal) : (editData.current.clockOut === '' ? null : editData.current.clockOut),
+                    breakTime: editData.current.breakTime,
+        });
+        onToggleEdit();
+    };
+
     // --- EDIT MODE ---
     if (isEditing) {
-
-        // Helper to save using the direct formatted string from the input
-        const saveWithFormattedTime = (field: 'clockIn' | 'clockOut', formattedVal: string) => {
-            const updates = field === 'clockIn'
-            ? { clockIn: formattedVal }
-            : { clockOut: formattedVal === '' ? null : formattedVal };
-
-            updateEntry(entry.id, {
-                ...updates,
-                breakTime: editBreak,
-            });
-            onToggleEdit();
-        };
-
         return (
             <tr
             className={isActive ? 'active-shift' : ''}
@@ -101,7 +110,6 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             <td>{employee ? `${employee.firstName}${employee.lastName ? ' ' + employee.lastName : ''}` : 'Unknown Employee'}</td>
             <td>{employee?.role || 'Unknown'}</td>
 
-            {/* Clock In - Passes the formatted string directly to save */}
             <td style={{ minWidth: '120px' }}>
             <SmartTimeInput
             value={editClockIn}
@@ -113,7 +121,6 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             />
             </td>
 
-            {/* Clock Out - Passes the formatted string directly to save */}
             <td style={{ minWidth: '120px' }}>
             <SmartTimeInput
             value={editClockOut}
@@ -125,7 +132,6 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             />
             </td>
 
-            {/* Break Time - Standard save */}
             <td>
             <input
             type="number"
@@ -155,14 +161,14 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             style={{ padding: '4px 8px', fontSize: '0.8rem' }}
             onClick={(e) => {
                 e.stopPropagation();
-                if (!editClockIn) {
+                if (!editData.current.clockIn) {
                     showToast('Clock In is required', 'error');
                     return;
                 }
                 updateEntry(entry.id, {
-                    clockIn: editClockIn,
-                    clockOut: editClockOut === '' ? null : editClockOut,
-                    breakTime: editBreak
+                    clockIn: editData.current.clockIn,
+                    clockOut: editData.current.clockOut === '' ? null : editData.current.clockOut,
+                    breakTime: editData.current.breakTime
                 });
                 onToggleEdit();
             }}
@@ -180,17 +186,12 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
     return (
         <tr
         className={isActive ? 'active-shift' : ''}
-        onClick={onToggleEdit} // Clicking ANYWHERE on the row enters edit mode
+        onClick={onToggleEdit}
         style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}
         >
-        {/* Employee - Read Only */}
         <td>{employee ? `${employee.firstName}${employee.lastName ? ' ' + employee.lastName : ''}` : 'Unknown Employee'}</td>
         <td>{employee?.role || 'Unknown'}</td>
-
-        {/* Clock In - Read Only */}
         <td>{formatTimeDisplay(entry.clockIn, settings.timeFormat)}</td>
-
-        {/* Clock Out - Interactive if active */}
         <td>
         {isActive ? (
             <SmartTimeInput
@@ -198,14 +199,12 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             onChange={(val) => updateEntry(entry.id, { clockOut: val === '' ? null : val })}
             format={settings.timeFormat}
             className="table-time-input"
-            onClick={(e) => e.stopPropagation()} // Stop click from exiting edit mode
+            onClick={(e) => e.stopPropagation()}
             />
         ) : (
             formatTimeDisplay(entry.clockOut, settings.timeFormat)
         )}
         </td>
-
-        {/* Break Time - Interactive if active */}
         <td>
         {isActive ? (
             <input
@@ -216,32 +215,24 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             min="0"
             step="15"
             onChange={(e) => updateEntry(entry.id, { breakTime: Number(e.target.value) })}
-            onClick={(e) => e.stopPropagation()} // Stop click from exiting edit mode
+            onClick={(e) => e.stopPropagation()}
             />
         ) : (
             `${entry.breakTime} min`
         )}
         </td>
-
-        {/* Total Hours - Read Only */}
         <td>{isActive ? <em style={{color: '#666'}}>Active</em> : `${entry.totalHours} hrs`}</td>
-
-        {/* Overtime Checkbox - Interactive */}
         <td style={{ textAlign: 'center' }}>
         {isActive ? '-' : (
             <input
             type="checkbox"
             checked={entry.isOvertime}
             onChange={(e) => updateEntry(entry.id, { isOvertime: e.target.checked })}
-            onClick={(e) => e.stopPropagation()} // Stop click from exiting edit mode
+            onClick={(e) => e.stopPropagation()}
             />
         )}
         </td>
-
-        {/* Cost - Read Only */}
         <td>{isActive ? '-' : `$${cost.toFixed(2)}`}</td>
-
-        {/* Delete Button - Interactive */}
         <td>
         <button
         className="delete-btn"
