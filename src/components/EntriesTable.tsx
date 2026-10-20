@@ -10,7 +10,7 @@ import SmartTimeInput from './SmartTimeInput';
 export default function EntriesTable() {
     const { entries, bulkUpdateEntries, settings } = useAppContext();
     const { showToast } = useToast();
-    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     // Restored: Ref to track the table for outside clicks
     const tableRef = useRef<HTMLTableElement>(null);
@@ -19,7 +19,7 @@ export default function EntriesTable() {
     const [bulkClockIn, setBulkClockIn] = useState('');
     const [bulkClockOut, setBulkClockOut] = useState('');
 
-    const toggleEdit = (id: number) => {
+    const toggleEdit = (id: string) => {
         setEditingId(prev => (prev === id ? null : id));
     };
 
