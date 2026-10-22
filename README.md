@@ -6,10 +6,6 @@ It is primarily geared towards small business owners and team leads that may be 
 
 ---
 
-[openlabor-demo.webm](https://github.com/user-attachments/assets/6021515c-6c03-422c-9f03-d8220ee00693)
-
----
-
 ### Features
 
 - Timesheets — Straightforward tracking and editing.
