@@ -1,6 +1,6 @@
 # OpenLabor
 
-OpenLabor is a free and open source dashboard designed to unify fragmented hourly labor data from disconnected sources. It's designed to save time and improve reporting accuracy by providing granular visibility into actual labor utilization and costs without the overhead of payroll software.
+OpenLabor is a free and open source dashboard designed to unify fragmented hourly labor data from disconnected sources. It's meant to save time and improve reporting accuracy by providing granular visibility into actual labor utilization and costs without the overhead of payroll software.
 
 ---
 
