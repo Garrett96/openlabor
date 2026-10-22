@@ -24,8 +24,9 @@ export default function TeamSearch({ Teams, value, onChange, placeholder, onText
             }
         } else {
             setQuery('');
+            if (onTextChange) onTextChange('');
         }
-    }, [value, Teams]);
+    }, [value, Teams, onTextChange]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -80,7 +81,6 @@ export default function TeamSearch({ Teams, value, onChange, placeholder, onText
                 className="table-time-input"
                 />
 
-                {/* dropdown render */}
                 {isOpen && query.trim().length > 0 && filteredTeams.length > 0 && (
                     <ul style={{
                         position: 'absolute',

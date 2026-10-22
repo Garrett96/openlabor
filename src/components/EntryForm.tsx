@@ -18,13 +18,14 @@ export default function EntryForm() {
     const [clockOut, setClockOut] = useState('');
     const [breakTime, setBreakTime] = useState(0);
 
+    const [formKey, setFormKey] = useState(0);
+
     const isSubmittingRef = useRef(false);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
 
         if (isSubmittingRef.current) return;
-
         isSubmittingRef.current = true;
 
         let finalTeamId = TeamId;
@@ -55,6 +56,8 @@ export default function EntryForm() {
 
         addEntry(finalTeamId, clockIn, clockOut || null, breakTime);
 
+        setFormKey(prev => prev + 1);
+
         setTeamId('');
         setSearchText('');
         setClockIn('');
@@ -71,6 +74,7 @@ export default function EntryForm() {
         <div className="form-group">
         <label>Name</label>
         <TeamSearch
+        key={`team-search-${formKey}`}
         Teams={Teams}
         value={TeamId}
         onChange={setTeamId}
@@ -81,17 +85,30 @@ export default function EntryForm() {
 
         <div className="form-group">
         <label>Clock In</label>
-        <SmartTimeInput value={clockIn} onChange={setClockIn} format={settings.timeFormat} className="table-time-input" />
+        <SmartTimeInput
+        key={`clock-in-${formKey}`}
+        value={clockIn}
+        onChange={setClockIn}
+        format={settings.timeFormat}
+        className="table-time-input"
+        />
         </div>
 
         <div className="form-group">
         <label>Clock Out [Optional]</label>
-        <SmartTimeInput value={clockOut} onChange={setClockOut} format={settings.timeFormat} className="table-time-input" />
+        <SmartTimeInput
+        key={`clock-out-${formKey}`}
+        value={clockOut}
+        onChange={setClockOut}
+        format={settings.timeFormat}
+        className="table-time-input"
+        />
         </div>
 
         <div className="form-group">
         <label htmlFor="breakTime">Total Break Period [minutes]</label>
         <input
+        key={`break-time-${formKey}`}
         type="number"
         id="breakTime"
         min="0"
