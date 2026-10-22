@@ -10,11 +10,12 @@ OpenLabor is a free and open source hourly-workforce analytics dashboard that as
 
 ### Features
 
-- **Timesheet Reporting** — Log everyone's hours. Edit the entries easily.
-- **Roster Management** — Keep every team member in a simple database with individualized roles and pay rates.
-- **P&L Insights** — Helps approximate what a workday costs.
-- **Data Control** — No vendor lock-in. Export as JSON, CSV, or POST to your own endpoint.
-- **Quality of life UX** — Built with simplicity and usability in mind.
+- Timesheets — Straightforward tracking and editing.
+- Team Roster — Persistent database per browser instance with roles and individualized rates.
+- P&L — Approximations of daily workday costs.
+- Open Data — Export to JSON/CSV, or POST to a custom endpoint.
+- Smart Math — Accurately calculates overnight and cross-day shifts.
+- Convenience — A dedicated UX design replaces the friction of spreadsheets and pen-and-paper.
 
 ---
 
