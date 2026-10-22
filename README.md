@@ -27,22 +27,15 @@ OpenLabor can be self-hosted and used offline.
 
 To run the application, you will need [Node.js](https://nodejs.org/) installed on your machine.
 
-1. Download or clone this repository:
+```bash
+git clone https://github.com/Garrett96/openlabor-v2.git
+cd openlabor-v2
+```
 
-   ```bash
-   git clone https://github.com/Garrett96/openlabor-v2.git
-   cd openlabor-v2
-   ```
-2. Run the setup script for your operating system:
+`./run.sh` on Linux/Mac.
+`run.bat` on Windows.
 
-    Mac/Linux: Open your terminal and run: `./run.sh`
-    Windows: Double-click: `run.bat`
-
-3. The script will ask for your consent, install dependencies, build the app, and start a local server.
-
-4. Open your browser and navigate to http://localhost:8070
-
-The application is explicitly configured to run on port 8070 to prevent conflicts with other local development servers.
+The application is configured to run at `http://localhost:8070` to prevent conflicts with other local development servers.
 
 ### License
 
