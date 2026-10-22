@@ -107,7 +107,7 @@ export default function TeamManager() {
         {/* Team List with Quick Role Swap */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {Teams.length === 0 ? (
-            <p style={{ color: '#666', fontStyle: 'italic' }}>No Teams added yet.</p>
+            <p style={{ color: '#666', fontStyle: 'italic' }}>No team members added.</p>
         ) : (
             sortedTeams.map(emp => (
                 <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px' }}>
