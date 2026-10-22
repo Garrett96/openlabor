@@ -125,10 +125,9 @@ export default function EmployeeManager() {
                 style={{ padding: '4px 8px', fontSize: '0.8rem' }}
                 onClick={() => {
                     deleteEmployee(emp.id);
-
                     showToast(`${emp.firstName} ${emp.lastName} removed`, 'success', true, () => {
-                        addEmployee(emp.firstName, emp.lastName, emp.role, emp.baseRate, emp.id);
-                        showToast(`${emp.firstName} ${emp.lastName} restored`, 'success');
+                    addEmployee(emp.firstName, emp.lastName || '', emp.role, emp.baseRate, emp.id);
+                    showToast(`${emp.firstName} ${emp.lastName} restored`, 'success');
                     });
                 }}
                 >
