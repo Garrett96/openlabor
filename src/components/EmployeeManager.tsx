@@ -18,6 +18,7 @@ export default function EmployeeManager() {
     const [baseRate, setBaseRate] = useState(settings.defaultBaseRate);
 
     const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
+    const [sortOrder, setSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
 
     useEffect(() => {
         setBaseRate(settings.defaultBaseRate);
@@ -47,6 +48,17 @@ export default function EmployeeManager() {
         setLastName('');
     };
 
+    const sortedEmployees = [...employees].sort((a, b) => {
+        if (sortOrder === 'none') return 0;
+
+        const nameA = `${a.firstName} ${a.lastName || ''}`.toLowerCase();
+        const nameB = `${b.firstName} ${b.lastName || ''}`.toLowerCase();
+
+        if (nameA < nameB) return sortOrder === 'asc' ? -1 : 1;
+        if (nameA > nameB) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+    });
+
     return (
         <section className="cost-config-section">
         <h2>Employee Registry</h2>
@@ -74,12 +86,30 @@ export default function EmployeeManager() {
         <button type="submit" className="btn">Add Employee</button>
         </form>
 
+        {/* Sort Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 500 }}>
+        {employees.length} Employee{employees.length !== 1 ? 's' : ''}
+        </span>
+        <button
+        className="btn btn-secondary"
+        style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+        onClick={() => {
+            if (sortOrder === 'none') setSortOrder('asc');
+            else if (sortOrder === 'asc') setSortOrder('desc');
+            else setSortOrder('none');
+        }}
+        >
+        {sortOrder === 'asc' ? 'Sort: A-Z' : sortOrder === 'desc' ? 'Sort: Z-A' : 'Sort: Default'}
+        </button>
+        </div>
+
         {/* Employee List with Quick Role Swap */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {employees.length === 0 ? (
             <p style={{ color: '#666', fontStyle: 'italic' }}>No employees added yet.</p>
         ) : (
-            employees.map(emp => (
+            sortedEmployees.map(emp => (
                 <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                 <strong>{emp.firstName}{emp.lastName ? ` ${emp.lastName}` : ''}</strong>
