@@ -1,21 +1,27 @@
 // src/components/EmployeeManager.tsx
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useEmployees } from '../context/EmployeeContext';
 import { useToast } from '../context/ToastContext';
+import { useAppContext } from '../context/AppContext';
 import { ROLES, RoleType } from '../types';
 
 export default function EmployeeManager() {
     const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
     const { showToast } = useToast();
+    const { settings, updateSettings } = useAppContext();
 
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [role, setRole] = useState<RoleType>('Staff');
-    const [baseRate, setBaseRate] = useState(20);
 
-    // State for inline role editing
+    const [baseRate, setBaseRate] = useState(settings.defaultBaseRate);
+
     const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
+
+    useEffect(() => {
+        setBaseRate(settings.defaultBaseRate);
+    }, [settings.defaultBaseRate]);
 
     const handleAdd = (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,6 +29,10 @@ export default function EmployeeManager() {
 
         addEmployee(firstName, lastName, role, baseRate);
         showToast(`${firstName} ${lastName} added to roster`, 'success');
+
+        if (baseRate !== settings.defaultBaseRate) {
+            updateSettings({ ...settings, defaultBaseRate: baseRate });
+        }
 
         setFirstName('');
         setLastName('');
@@ -32,7 +42,7 @@ export default function EmployeeManager() {
         <section className="cost-config-section">
         <h2>Employee Registry</h2>
 
-        {/* Add Employee Form (Same as before) */}
+        {/* Add Employee Form */}
         <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem', alignItems: 'end' }}>
         <div className="form-group">
         <label>First Name</label>

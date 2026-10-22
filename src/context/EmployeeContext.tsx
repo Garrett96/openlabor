@@ -16,7 +16,6 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load from abstracted data store
     useEffect(() => {
         dataStore.getEmployees().then((data) => {
             setEmployees(data);
@@ -24,7 +23,6 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
         });
     }, []);
 
-    // Save to abstracted data store whenever employees change
     useEffect(() => {
         if (isLoaded) {
             dataStore.saveEmployees(employees);
@@ -33,7 +31,7 @@ export function EmployeeProvider({ children }: { children: ReactNode }) {
 
     const addEmployee = (firstName: string, lastName: string, role: RoleType, baseRate: number, id?: string) => {
         const newEmployee: Employee = {
-            id: id || crypto.randomUUID(), // Use provided ID or generate one
+            id: id || crypto.randomUUID(),
             firstName,
             lastName,
             role,

@@ -26,10 +26,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const [settings, setSettings] = useState<AppSettings | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Generate colors for Roles instead of old Categories
     const [roleColors] = useState(() => generateRoleColors());
 
-    // Initialize Data from Abstracted Store
     useEffect(() => {
         Promise.all([
             dataStore.getEntries(),
@@ -41,7 +39,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         });
     }, []);
 
-    // Persist Data
     useEffect(() => {
         if (isLoaded) dataStore.saveEntries(entries);
     }, [entries, isLoaded]);
@@ -49,8 +46,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         useEffect(() => {
             if (isLoaded && settings) dataStore.saveSettings(settings);
         }, [settings, isLoaded]);
-
-            // --- ACTIONS ---
 
             const addEntry = (employeeId: string, clockIn: string, clockOut: string | null, breakTime: number) => {
                 const totalHours = calculateHours(clockIn, clockOut, breakTime);
@@ -98,7 +93,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
             const updateSettings = (newSettings: AppSettings) => setSettings(newSettings);
 
-            if (!settings) return null; // Prevent rendering before settings load
+            if (!settings) return null;
 
             return (
                 <AppContext.Provider value={{

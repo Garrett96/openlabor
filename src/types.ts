@@ -1,40 +1,37 @@
 // src/types.ts
 
-// 1. The Employee Entity (HRIS Style)
 export type RoleType = 'Staff' | 'Temp' | 'Contractor' | 'Other';
 export type EmployeeStatus = 'Active' | 'Inactive';
 
 export interface Employee {
-    id: string; // UUID
+    id: string;
     firstName: string;
     lastName?: string;
     role: RoleType;
-    baseRate: number; // Hourly rate specific to this employee
+    baseRate: number;
     status: EmployeeStatus;
 }
 
-// 2. The Time Entry (Now references an Employee)
 export interface TimeEntry {
-    id: string; // UUID
-    employeeId: string; // Foreign Key to Employee
-    clockIn: string; // "HH:MM" 24h format
+    id: string;
+    employeeId: string;
+    clockIn: string;
     clockOut: string | null;
-    breakTime: number; // Minutes
+    breakTime: number;
     totalHours: number;
     isOvertime: boolean;
-    notes?: string; // Added for future audit/compliance notes
+    notes?: string;
 }
 
-// 3. App Settings (Simplified, as wages moved to Employee)
 export interface AppSettings {
     overtimeMultiplier: number;
     webhookUrl: string;
     enablePush: boolean;
     timeFormat: '12h' | '24h';
-    punchRoundingMinutes: 0 | 5 | 15 | 30; // Added for future Phase 2
+    punchRoundingMinutes: 0 | 5 | 15 | 30;
+    defaultBaseRate: number;
 }
 
-// Helper for Roles
 export const ROLES: { key: RoleType; label: string }[] = [
     { key: 'Staff', label: 'Staff' },
 { key: 'Temp', label: 'Temp' },

@@ -2,22 +2,17 @@
 
 import { TimeEntry, Employee, AppSettings } from '../types';
 
-// 1. The Contract (Interface)
 export interface IDataStore {
-    // Entries
     getEntries(): Promise<TimeEntry[]>;
     saveEntries(entries: TimeEntry[]): Promise<void>;
 
-    // Employees
     getEmployees(): Promise<Employee[]>;
     saveEmployees(employees: Employee[]): Promise<void>;
 
-    // Settings
     getSettings(): Promise<AppSettings>;
     saveSettings(settings: AppSettings): Promise<void>;
 }
 
-// 2. The Implementation (LocalStorage)
 export class LocalStorageStore implements IDataStore {
     private get<T>(key: string, defaultValue: T): Promise<T> {
         return new Promise((resolve) => {
@@ -43,7 +38,6 @@ export class LocalStorageStore implements IDataStore {
         });
     }
 
-    // Entries
     async getEntries(): Promise<TimeEntry[]> {
         return this.get<TimeEntry[]>('tempus_entries', []);
     }
@@ -51,7 +45,6 @@ export class LocalStorageStore implements IDataStore {
         await this.set('tempus_entries', entries);
     }
 
-    // Employees
     async getEmployees(): Promise<Employee[]> {
         return this.get<Employee[]>('tempus_employees', []);
     }
@@ -59,7 +52,6 @@ export class LocalStorageStore implements IDataStore {
         await this.set('tempus_employees', employees);
     }
 
-    // Settings
     async getSettings(): Promise<AppSettings> {
         const defaults: AppSettings = {
             overtimeMultiplier: 1.5,
@@ -67,6 +59,7 @@ export class LocalStorageStore implements IDataStore {
             enablePush: false,
             timeFormat: '24h',
             punchRoundingMinutes: 0,
+            defaultBaseRate: 20,
         };
         const loaded = await this.get<Partial<AppSettings>>('tempus_settings', {});
         return { ...defaults, ...loaded };
@@ -76,5 +69,4 @@ export class LocalStorageStore implements IDataStore {
     }
 }
 
-// 3. The Singleton Instance
 export const dataStore = new LocalStorageStore();
