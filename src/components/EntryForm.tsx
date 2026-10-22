@@ -13,7 +13,7 @@ export default function EntryForm() {
     const { showToast } = useToast();
 
     const [employeeId, setEmployeeId] = useState('');
-    const [searchText, setSearchText] = useState(''); // Tracks raw typing
+    const [searchText, setSearchText] = useState('');
     const [clockIn, setClockIn] = useState('');
     const [clockOut, setClockOut] = useState('');
     const [breakTime, setBreakTime] = useState(0);
@@ -22,18 +22,17 @@ export default function EntryForm() {
         e.preventDefault();
         let finalEmployeeId = employeeId;
 
-        // SMART INTAKE: If no employee is selected, but text was typed, create them!
         if (!finalEmployeeId && searchText.trim()) {
             const parts = searchText.trim().split(/\s+/);
             const firstName = parts[0];
             const lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
 
-            // Generate ID, add to roster as Temp, default $20/hr
             const newId = crypto.randomUUID();
-            addEmployee(firstName, lastName, 'Temp', 20.00, newId);
+            addEmployee(firstName, lastName, 'Temp', settings.defaultBaseRate, newId);
             finalEmployeeId = newId;
 
-            showToast(`Added ${firstName} ${lastName} to roster`, 'success');
+            const fullName = lastName ? `${firstName} ${lastName}` : firstName;
+            showToast(`Added ${fullName} to roster`, 'success');
         }
 
         if (!finalEmployeeId) {
@@ -64,7 +63,7 @@ export default function EntryForm() {
         employees={employees}
         value={employeeId}
         onChange={setEmployeeId}
-        onTextChange={setSearchText} // <-- ADDED
+        onTextChange={setSearchText}
         placeholder="Type name to search or add new..."
         />
         </div>

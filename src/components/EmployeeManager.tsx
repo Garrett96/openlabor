@@ -23,6 +23,15 @@ export default function EmployeeManager() {
         setBaseRate(settings.defaultBaseRate);
     }, [settings.defaultBaseRate]);
 
+    const handleBaseRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newRate = Number(e.target.value);
+        setBaseRate(newRate);
+
+        if (newRate !== settings.defaultBaseRate) {
+            updateSettings({ ...settings, defaultBaseRate: newRate });
+        }
+    };
+
     const handleAdd = (e: React.FormEvent) => {
         e.preventDefault();
         if (!firstName.trim() || !lastName.trim()) return;
@@ -60,7 +69,7 @@ export default function EmployeeManager() {
         </div>
         <div className="form-group">
         <label>Base Rate ($/hr)</label>
-        <input type="number" min="0" step="0.50" value={baseRate} onChange={e => setBaseRate(Number(e.target.value))} />
+        <input type="number" min="0" step="0.50" value={baseRate} onChange={handleBaseRateChange} />
         </div>
         <button type="submit" className="btn">Add Employee</button>
         </form>
