@@ -14,102 +14,112 @@ interface EmployeeSearchProps {
 export default function EmployeeSearch({ employees, value, onChange, placeholder, onTextChange }: EmployeeSearchProps) {
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
 
-    // Sync the text input with the selected employee's name
     useEffect(() => {
         if (value) {
             const emp = employees.find(e => e.id === value);
-            if (emp) setQuery(`${emp.firstName} ${emp.lastName}`);
+            if (emp) {
+                setQuery(`${emp.firstName}${emp.lastName ? ' ' + emp.lastName : ''}`);
+            }
         } else {
             setQuery('');
         }
     }, [value, employees]);
 
-    // Close dropdown when clicking outside
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
-        };
+        }
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Filter logic
-    const filteredEmployees = employees
-    .filter(e => e.status === 'Active')
-    .filter(e => {
-        const searchStr = `${e.firstName} ${e.lastName} ${e.role}`.toLowerCase();
-        return searchStr.includes(query.toLowerCase());
-    });
-
-    const handleSelect = (emp: Employee) => {
-        onChange(emp.id);
-        setQuery(`${emp.firstName} ${emp.lastName}`);
-        setIsOpen(false);
-    };
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setQuery(e.target.value);
-        setIsOpen(true);
-        if (e.target.value === '') onChange('');
-        if (onTextChange) onTextChange(e.target.value);
+        const newValue = e.target.value;
+        setQuery(newValue);
+
+        if (newValue.trim().length > 0) {
+            setIsOpen(true);
+        } else {
+            setIsOpen(false);
+        }
+
+        onChange('');
+        if (onTextChange) onTextChange(newValue);
     };
 
-        return (
-            <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
-            <input
-            type="text"
-            value={query}
-            onChange={handleInputChange}
-            onFocus={() => setIsOpen(true)}
-            placeholder={placeholder || "Search employees..."}
-            className="table-time-input" // Reuses your existing input styling
-            autoComplete="off"
-            />
+        const handleSelect = (emp: Employee) => {
+            const fullName = `${emp.firstName}${emp.lastName ? ' ' + emp.lastName : ''}`;
+            setQuery(fullName);
+            onChange(emp.id);
+            setIsOpen(false);
+            if (onTextChange) onTextChange(fullName);
+        };
 
-            {isOpen && filteredEmployees.length > 0 && (
-                <ul style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    margin: 0,
-                    padding: 0,
-                    listStyle: 'none',
-                    backgroundColor: 'white',
-                    border: '1px solid var(--border)',
-                                                        borderRadius: '6px',
-                                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                                                        maxHeight: '200px',
-                                                        overflowY: 'auto',
-                                                        zIndex: 50,
-                                                        marginTop: '4px'
-                }}>
-                {filteredEmployees.map(emp => (
-                    <li
-                    key={emp.id}
-                    onClick={() => handleSelect(emp)}
-                    style={{
-                        padding: '8px 12px',
-                        cursor: 'pointer',
-                        borderBottom: '1px solid #f0f0f0',
-                        fontSize: '0.9rem',
-                        display: 'flex',
-                        justifyContent: 'space-between'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-                    >
-                    <span>{emp.firstName}{emp.lastName ? ` ${emp.lastName}` : ''}</span>
-                    <span style={{ color: '#666', fontSize: '0.8rem' }}>{emp.role}</span>
-                    </li>
-                ))}
-                </ul>
-            )}
+            const filteredEmployees = query.trim().length > 0
+            ? employees.filter(emp => {
+                const fullName = `${emp.firstName} ${emp.lastName || ''}`.toLowerCase();
+                return fullName.includes(query.toLowerCase());
+            })
+            : [];
 
-            </div>
-        );
+            return (
+                <div style={{ position: 'relative' }} ref={wrapperRef}>
+                <input
+                type="text"
+                value={query}
+                onChange={handleInputChange}
+                onFocus={() => {
+                    if (query.trim().length > 0) setIsOpen(true);
+                }}
+                placeholder={placeholder || "Type name to search or add new..."}
+                style={{ width: '100%' }}
+                className="table-time-input"
+                />
+
+                {/* dropdown render */}
+                {isOpen && query.trim().length > 0 && filteredEmployees.length > 0 && (
+                    <ul style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        margin: 0,
+                        padding: 0,
+                        listStyle: 'none',
+                        backgroundColor: 'white',
+                        border: '1px solid var(--border)',
+                        borderRadius: '6px',
+                        marginTop: '4px',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        zIndex: 50,
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}>
+                    {filteredEmployees.map(emp => (
+                        <li
+                        key={emp.id}
+                        onClick={() => handleSelect(emp)}
+                        style={{
+                            padding: '8px 12px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid #f0f0f0',
+                            fontSize: '0.9rem'
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'white')}
+                        >
+                        <strong>{emp.firstName}{emp.lastName ? ` ${emp.lastName}` : ''}</strong>
+                        <span style={{ color: '#666', fontSize: '0.8rem', marginLeft: '8px' }}>
+                        ({emp.role})
+                        </span>
+                        </li>
+                    ))}
+                    </ul>
+                )}
+                </div>
+            );
 }
