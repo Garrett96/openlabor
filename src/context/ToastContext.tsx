@@ -83,7 +83,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <div style={{ display: 'flex', gap: '8px' }}>
             {toast.undoAction && (
                 <button
-                onClick={() => { toast.undoAction(); removeToast(toast.id); }}
+                onClick={() => {
+                    if (toast.undoAction) toast.undoAction();
+                    removeToast(toast.id);
+                }}
                 style={{
                     background: 'rgba(255,255,255,0.2)',
                     border: 'none',
