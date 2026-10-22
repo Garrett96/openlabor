@@ -29,7 +29,7 @@ To run the application, you will need [Node.js](https://nodejs.org/) installed o
 
 ```bash
 git clone https://github.com/Garrett96/openlabor.git
-cd openlabor-v2
+cd openlabor
 ```
 
 `bash run.sh` on Linux/Mac.
