@@ -28,7 +28,7 @@ OpenLabor can be self-hosted and used offline.
 To run the application, you will need [Node.js](https://nodejs.org/) installed on your machine.
 
 ```bash
-git clone https://github.com/Garrett96/openlabor-v2.git
+git clone https://github.com/Garrett96/openlabor.git
 cd openlabor-v2
 ```
 
