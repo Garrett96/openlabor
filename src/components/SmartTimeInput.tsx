@@ -16,7 +16,6 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
 
     const [text, setText] = useState('');
 
-    // Convert internal 24h value to display format
     useEffect(() => {
         if (!value) {
             setText('');
@@ -39,41 +38,32 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
     const parseTimeInput = (input: string): string | null => {
         const clean = input.toLowerCase().trim().replace(/[^0-9ampm]/g, '');
 
-        // Handle various formats
         let hours = 0;
         let minutes = 0;
         let isPM = false;
 
-        // Extract AM/PM
         if (clean.includes('pm')) {
             isPM = true;
         }
         const numPart = clean.replace(/[ampm]/g, '');
 
-        // Parse numbers
         if (numPart.length === 1) {
-            // "1" -> 01:00
             hours = parseInt(numPart, 10);
         } else if (numPart.length === 2) {
-            // "14" -> 14:00 or "1p" -> 13:00
             hours = parseInt(numPart, 10);
         } else if (numPart.length === 3) {
-            // "130" -> 01:30
             hours = parseInt(numPart[0], 10);
             minutes = parseInt(numPart.slice(1), 10);
         } else if (numPart.length >= 4) {
-            // "1430" -> 14:30
             hours = parseInt(numPart.slice(0, 2), 10);
             minutes = parseInt(numPart.slice(2, 4), 10);
         }
 
-        // Convert 12h to 24h if needed
         if (format === '12h' || isPM || clean.includes('p')) {
             if (isPM && hours < 12) hours += 12;
             if (!isPM && hours === 12) hours = 0;
         }
 
-        // Validate
         if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
             return null;
         }
@@ -83,7 +73,6 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setText(e.target.value);
-        // Don't update parent state until blur - let them type freely
     };
 
     const handleBlur = () => {
@@ -96,16 +85,12 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
         if (parsed) {
             onChange(parsed);
         } else {
-            // Revert to last valid value
             setText(value || '');
         }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
-            e.preventDefault();
-
-            // Synchronously calculate the final formatted value
             let raw = text.replace(/[^0-9]/g, '');
             let finalVal = text;
 
@@ -121,17 +106,22 @@ export default function SmartTimeInput({ value, onChange, format, className, pla
                 finalVal = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
             }
 
-            // If valid, save it immediately
-            if (/^[0-2][0-9]:[0-5][0-9]$/.test(finalVal)) {
-                onChange(finalVal); // Update parent state
+            const isValid = /^[0-2][0-9]:[0-5][0-9]$/.test(finalVal);
+
+            if (isValid) {
+                onChange(finalVal);
+
                 if (onSaveWithFormat) {
-                    onSaveWithFormat(finalVal); // Trigger table save
+                    e.preventDefault();
+                    onSaveWithFormat(finalVal);
                 }
             } else {
-                handleBlur(); // Revert if invalid
+                e.preventDefault();
+                handleBlur();
             }
         }
     };
+
     return (
         <input
         type="text"
