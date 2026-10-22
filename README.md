@@ -32,8 +32,9 @@ git clone https://github.com/Garrett96/openlabor-v2.git
 cd openlabor-v2
 ```
 
-`./run.sh` on Linux/Mac.
-`run.bat` on Windows.
+`bash run.sh` on Linux/Mac.
+
+Double-click `run.bat` on Windows.
 
 The application is configured to run at `http://localhost:8070` to prevent conflicts with other local development servers.
 

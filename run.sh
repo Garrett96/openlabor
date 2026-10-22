@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Automatically grant execute permissions to this script for future runs
+chmod +x run.sh
+
 echo "🚀 Welcome to OpenLabor Setup!"
 echo ""
 echo "This script will install dependencies, build the application, and start a local server."
@@ -39,5 +42,5 @@ echo "OpenLabor is now running at: http://localhost:8070"
 echo "Press Ctrl+C to stop the server."
 echo ""
 
-# Serve the built files on the uncommon port 6070
+# Serve the built files on port 8070
 npx serve dist -l 8070 -s
