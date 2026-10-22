@@ -24,24 +24,20 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
     const isActive = !entry.clockOut;
     const color = Team ? roleColors[Team.role] : { border: '#ccc', bg: '#f8fafc' };
 
-    // 1. Standard React State for UI rendering
     const [editClockIn, setEditClockInState] = useState(entry.clockIn);
     const [editClockOut, setEditClockOutState] = useState(entry.clockOut ?? '');
     const [editBreak, setEditBreakState] = useState(entry.breakTime);
 
-    // 2. Synchronous Ref for Auto-Save (Prevents race conditions)
     const editData = useRef({
         clockIn: entry.clockIn,
         clockOut: entry.clockOut ?? '',
         breakTime: entry.breakTime
     });
 
-    // 3. Wrapped Setters (Updates UI and Ref simultaneously)
     const setEditClockIn = (val: string) => { editData.current.clockIn = val; setEditClockInState(val); };
     const setEditClockOut = (val: string) => { editData.current.clockOut = val; setEditClockOutState(val); };
     const setEditBreak = (val: number) => { editData.current.breakTime = val; setEditBreakState(val); };
 
-    // Sync ref when entering edit mode
     useEffect(() => {
         if (isEditing) {
             editData.current = {
@@ -55,7 +51,6 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
         }
     }, [isEditing, entry.id]);
 
-    // Auto-save on exit edit mode (Uses the synchronous ref, not stale state)
     useEffect(() => {
         if (isEditing) {
             return () => {
@@ -87,7 +82,6 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
         }
     };
 
-    // Explicit save for SmartTimeInput Enter key
     const saveWithFormattedTime = (field: 'clockIn' | 'clockOut', formattedVal: string) => {
         editData.current[field] = formattedVal; // Sync ref immediately
 

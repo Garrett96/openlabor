@@ -155,7 +155,7 @@ export default function TeamManager() {
                 style={{ padding: '4px 8px', fontSize: '0.8rem' }}
                 onClick={() => {
                     deleteTeam(emp.id);
-                    showToast(`${emp.firstName} ${emp.lastName} removed`, 'success', true, () => {
+                    showToast(`${emp.firstName} ${emp.lastName} removed`, 'error', true, () => {
                     addTeam(emp.firstName, emp.lastName || '', emp.role, emp.baseRate, emp.id);
                     showToast(`${emp.firstName} ${emp.lastName} restored`, 'success');
                     });
