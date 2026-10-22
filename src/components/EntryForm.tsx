@@ -58,7 +58,7 @@ export default function EntryForm() {
         <h2>Add Time Entry</h2>
         <form id="timeEntryForm" onSubmit={handleSubmit}>
         <div className="form-group">
-        <label>Employee</label>
+        <label>Name</label>
         <EmployeeSearch
         employees={employees}
         value={employeeId}
@@ -74,7 +74,7 @@ export default function EntryForm() {
         </div>
 
         <div className="form-group">
-        <label>Clock Out</label>
+        <label>Clock Out [Optional]</label>
         <SmartTimeInput value={clockOut} onChange={setClockOut} format={settings.timeFormat} className="table-time-input" />
         </div>
 

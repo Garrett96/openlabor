@@ -61,7 +61,7 @@ export default function EmployeeManager() {
 
     return (
         <section className="cost-config-section">
-        <h2>Employee Registry</h2>
+        <h2>Team Registry</h2>
 
         {/* Add Employee Form */}
         <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem', alignItems: 'end' }}>
@@ -83,13 +83,13 @@ export default function EmployeeManager() {
         <label>Base Rate ($/hr)</label>
         <input type="number" min="0" step="0.50" value={baseRate} onChange={handleBaseRateChange} />
         </div>
-        <button type="submit" className="btn">Add Employee</button>
+        <button type="submit" className="btn">Add Entry</button>
         </form>
 
         {/* Sort Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
         <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 500 }}>
-        {employees.length} Employee{employees.length !== 1 ? 's' : ''}
+        {employees.length} Total
         </span>
         <button
         className="btn btn-secondary"
