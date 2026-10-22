@@ -36,7 +36,7 @@ export default function EntryForm() {
         }
 
         if (!finalEmployeeId) {
-            showToast('Please select or type an employee name', 'error');
+            showToast('Please select or type a name', 'error');
             return;
         }
         if (!clockIn) {
