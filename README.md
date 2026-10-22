@@ -38,6 +38,8 @@ Double-click `run.bat` on Windows.
 
 The application is configured to run at `http://localhost:8070` to prevent conflicts with other local development servers.
 
+---
+
 ### License
 
 OpenLabor is released under the [Unlicense](https://unlicense.org/).
