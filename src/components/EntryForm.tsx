@@ -18,8 +18,15 @@ export default function EntryForm() {
     const [clockOut, setClockOut] = useState('');
     const [breakTime, setBreakTime] = useState(0);
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
+
         let finalTeamId = TeamId;
 
         if (!finalTeamId && searchText.trim()) {
@@ -37,10 +44,12 @@ export default function EntryForm() {
 
         if (!finalTeamId) {
             showToast('Please select or type a name', 'error');
+            setIsSubmitting(false);
             return;
         }
         if (!clockIn) {
             showToast('Clock In is required', 'error');
+            setIsSubmitting(false);
             return;
         }
 
@@ -51,6 +60,8 @@ export default function EntryForm() {
         setClockIn('');
         setClockOut('');
         setBreakTime(0);
+
+        setIsSubmitting(false);
     };
 
     return (
@@ -80,7 +91,15 @@ export default function EntryForm() {
 
         <div className="form-group">
         <label htmlFor="breakTime">Total Break Period [minutes]</label>
-        <input type="number" id="breakTime" min="0" step="15" value={breakTime} onChange={(e) => setBreakTime(Number(e.target.value))} className="table-time-input" />
+        <input
+        type="number"
+        id="breakTime"
+        min="0"
+        step="15"
+        value={breakTime}
+        onChange={(e) => setBreakTime(Number(e.target.value))}
+        className="table-time-input"
+        />
         </div>
 
         <button type="submit" className="btn">Add Entry</button>
