@@ -56,16 +56,7 @@ export default function EntryForm() {
     return (
         <section className="input-section">
         <h2>Add Time Entry</h2>
-        <form
-        onSubmit={handleSubmit}
-        onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSubmit(e as any);
-            }
-        }}
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', alignItems: 'end' }}
-        >
+        <form id="timeEntryForm" onSubmit={handleSubmit}>
         <div className="form-group">
         <label>Name</label>
         <EmployeeSearch
