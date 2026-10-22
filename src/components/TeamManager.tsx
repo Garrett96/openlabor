@@ -1,13 +1,13 @@
-// src/components/EmployeeManager.tsx
+// src/components/TeamManager.tsx
 
 import { useState, useEffect } from 'react';
-import { useEmployees } from '../context/EmployeeContext';
+import { useTeams } from '../context/TeamContext';
 import { useToast } from '../context/ToastContext';
 import { useAppContext } from '../context/AppContext';
 import { ROLES, RoleType } from '../types';
 
-export default function EmployeeManager() {
-    const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
+export default function TeamManager() {
+    const { Teams, addTeam, updateTeam, deleteTeam } = useTeams();
     const { showToast } = useToast();
     const { settings, updateSettings } = useAppContext();
 
@@ -37,7 +37,7 @@ export default function EmployeeManager() {
         e.preventDefault();
         if (!firstName.trim() || !lastName.trim()) return;
 
-        addEmployee(firstName, lastName, role, baseRate);
+        addTeam(firstName, lastName, role, baseRate);
         showToast(`${firstName} ${lastName} added to roster`, 'success');
 
         if (baseRate !== settings.defaultBaseRate) {
@@ -48,7 +48,7 @@ export default function EmployeeManager() {
         setLastName('');
     };
 
-    const sortedEmployees = [...employees].sort((a, b) => {
+    const sortedTeams = [...Teams].sort((a, b) => {
         if (sortOrder === 'none') return 0;
 
         const nameA = `${a.firstName} ${a.lastName || ''}`.toLowerCase();
@@ -63,7 +63,7 @@ export default function EmployeeManager() {
         <section className="cost-config-section">
         <h2>Team Registry</h2>
 
-        {/* Add Employee Form */}
+        {/* Add Team Form */}
         <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem', alignItems: 'end' }}>
         <div className="form-group">
         <label>First Name</label>
@@ -89,7 +89,7 @@ export default function EmployeeManager() {
         {/* Sort Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
         <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 500 }}>
-        {employees.length} Total
+        {Teams.length} Total
         </span>
         <button
         className="btn btn-secondary"
@@ -104,12 +104,12 @@ export default function EmployeeManager() {
         </button>
         </div>
 
-        {/* Employee List with Quick Role Swap */}
+        {/* Team List with Quick Role Swap */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        {employees.length === 0 ? (
-            <p style={{ color: '#666', fontStyle: 'italic' }}>No employees added yet.</p>
+        {Teams.length === 0 ? (
+            <p style={{ color: '#666', fontStyle: 'italic' }}>No Teams added yet.</p>
         ) : (
-            sortedEmployees.map(emp => (
+            sortedTeams.map(emp => (
                 <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                 <strong>{emp.firstName}{emp.lastName ? ` ${emp.lastName}` : ''}</strong>
@@ -120,7 +120,7 @@ export default function EmployeeManager() {
                     autoFocus
                     value={emp.role}
                     onChange={(e) => {
-                        updateEmployee(emp.id, { role: e.target.value as RoleType });
+                        updateTeam(emp.id, { role: e.target.value as RoleType });
                         setEditingRoleId(null);
                     }}
                     onBlur={() => setEditingRoleId(null)}
@@ -146,7 +146,7 @@ export default function EmployeeManager() {
                 type="number"
                 style={{ width: '70px', padding: '4px 8px' }}
                 value={emp.baseRate}
-                onChange={e => updateEmployee(emp.id, { baseRate: Number(e.target.value) })}
+                onChange={e => updateTeam(emp.id, { baseRate: Number(e.target.value) })}
                 />
                 <span style={{ fontSize: '0.85rem', color: '#666' }}>/hr</span>
                 </div>
@@ -154,9 +154,9 @@ export default function EmployeeManager() {
                 className="delete-btn"
                 style={{ padding: '4px 8px', fontSize: '0.8rem' }}
                 onClick={() => {
-                    deleteEmployee(emp.id);
+                    deleteTeam(emp.id);
                     showToast(`${emp.firstName} ${emp.lastName} removed`, 'success', true, () => {
-                    addEmployee(emp.firstName, emp.lastName || '', emp.role, emp.baseRate, emp.id);
+                    addTeam(emp.firstName, emp.lastName || '', emp.role, emp.baseRate, emp.id);
                     showToast(`${emp.firstName} ${emp.lastName} restored`, 'success');
                     });
                 }}

@@ -2,13 +2,13 @@
 
 import { } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { useEmployees } from '../context/EmployeeContext';
+import { useTeams } from '../context/TeamContext';
 import { useToast } from '../context/ToastContext';
 import { calculateEntryCost } from '../utils/calculations';
 
 export default function DataPipeline() {
     const { entries, settings, updateSettings } = useAppContext();
-    const { employees } = useEmployees();
+    const { Teams } = useTeams();
     const { showToast } = useToast();
 
     // --- EXPORT CSV ---
@@ -20,7 +20,7 @@ export default function DataPipeline() {
 
         const headers = ['First Name', 'Last Name', 'Role', 'Clock In', 'Clock Out', 'Break (min)', 'Total Hours', 'Overtime', 'Cost'];
         const rows = entries.map(entry => {
-            const emp = employees.find(e => e.id === entry.employeeId);
+            const emp = Teams.find(e => e.id === entry.TeamId);
             const firstName = emp?.firstName || 'Unknown';
             const lastName = emp?.lastName || '';
             const role = emp?.role || 'Unknown';
@@ -42,7 +42,7 @@ export default function DataPipeline() {
 
         const totalHours = entries.filter(e => e.clockOut).reduce((sum, e) => sum + e.totalHours, 0);
         const totalCost = entries.filter(e => e.clockOut).reduce((sum, e) => {
-            const emp = employees.find(emp => emp.id === e.employeeId);
+            const emp = Teams.find(emp => emp.id === e.TeamId);
             return sum + calculateEntryCost(e, emp?.baseRate || 0, settings);
         }, 0);
 
@@ -60,7 +60,7 @@ export default function DataPipeline() {
 
     // --- EXPORT JSON ---
     const handleExportJSON = () => {
-        const backup = { settings, entries, employees };
+        const backup = { settings, entries, Teams };
         const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);

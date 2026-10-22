@@ -3,7 +3,7 @@
 import { useState, KeyboardEvent, useEffect, useRef } from 'react';
 import { TimeEntry } from '../types';
 import { useAppContext } from '../context/AppContext';
-import { useEmployees } from '../context/EmployeeContext';
+import { useTeams } from '../context/TeamContext';
 import { useToast } from '../context/ToastContext';
 import { calculateEntryCost } from '../utils/calculations';
 import { formatTimeDisplay } from '../utils/time';
@@ -17,12 +17,12 @@ interface TableRowProps {
 
 export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowProps) {
     const { updateEntry, deleteEntry, restoreEntry, settings, roleColors } = useAppContext();
-    const { employees } = useEmployees();
+    const { Teams } = useTeams();
     const { showToast } = useToast();
 
-    const employee = employees.find(e => e.id === entry.employeeId);
+    const Team = Teams.find(e => e.id === entry.TeamId);
     const isActive = !entry.clockOut;
-    const color = employee ? roleColors[employee.role] : { border: '#ccc', bg: '#f8fafc' };
+    const color = Team ? roleColors[Team.role] : { border: '#ccc', bg: '#f8fafc' };
 
     // 1. Standard React State for UI rendering
     const [editClockIn, setEditClockInState] = useState(entry.clockIn);
@@ -107,8 +107,8 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             onClick={onToggleEdit}
             style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}
             >
-            <td>{employee ? `${employee.firstName}${employee.lastName ? ' ' + employee.lastName : ''}` : 'Unknown Employee'}</td>
-            <td>{employee?.role || 'Unknown'}</td>
+            <td>{Team ? `${Team.firstName}${Team.lastName ? ' ' + Team.lastName : ''}` : 'Unknown Team'}</td>
+            <td>{Team?.role || 'Unknown'}</td>
 
             <td style={{ minWidth: '120px' }}>
             <SmartTimeInput
@@ -154,7 +154,7 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
             onClick={(e) => e.stopPropagation()}
             />
             </td>
-            <td>${calculateEntryCost(entry, employee?.baseRate || 0, settings).toFixed(2)}</td>
+            <td>${calculateEntryCost(entry, Team?.baseRate || 0, settings).toFixed(2)}</td>
             <td>
             <button
             className="btn btn-secondary"
@@ -181,7 +181,7 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
     }
 
     // --- DISPLAY MODE ---
-    const cost = calculateEntryCost(entry, employee?.baseRate || 0, settings);
+    const cost = calculateEntryCost(entry, Team?.baseRate || 0, settings);
 
     return (
         <tr
@@ -189,8 +189,8 @@ export default function TableRow({ entry, isEditing, onToggleEdit }: TableRowPro
         onClick={onToggleEdit}
         style={{ cursor: 'pointer', borderLeft: `4px solid ${color.border}` }}
         >
-        <td>{employee ? `${employee.firstName}${employee.lastName ? ' ' + employee.lastName : ''}` : 'Unknown Employee'}</td>
-        <td>{employee?.role || 'Unknown'}</td>
+        <td>{Team ? `${Team.firstName}${Team.lastName ? ' ' + Team.lastName : ''}` : 'Unknown Team'}</td>
+        <td>{Team?.role || 'Unknown'}</td>
         <td>{formatTimeDisplay(entry.clockIn, settings.timeFormat)}</td>
         <td>
         {isActive ? (

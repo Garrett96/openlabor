@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import EntryForm from './components/EntryForm';
-import EmployeeManager from './components/EmployeeManager';
+import TeamManager from './components/TeamManager';
 import Config from './components/Config';
 import OverallSummary from './components/OverallSummary';
 import EntriesTable from './components/EntriesTable';
@@ -64,7 +64,7 @@ function App() {
       <DataPipeline />
       </>
     ) : (
-      <EmployeeManager />
+      <TeamManager />
     )}
     </main>
 

@@ -1,13 +1,13 @@
 // src/data/store.ts
 
-import { TimeEntry, Employee, AppSettings } from '../types';
+import { TimeEntry, Team, AppSettings } from '../types';
 
 export interface IDataStore {
     getEntries(): Promise<TimeEntry[]>;
     saveEntries(entries: TimeEntry[]): Promise<void>;
 
-    getEmployees(): Promise<Employee[]>;
-    saveEmployees(employees: Employee[]): Promise<void>;
+    getTeams(): Promise<Team[]>;
+    saveTeams(Teams: Team[]): Promise<void>;
 
     getSettings(): Promise<AppSettings>;
     saveSettings(settings: AppSettings): Promise<void>;
@@ -45,11 +45,11 @@ export class LocalStorageStore implements IDataStore {
         await this.set('tempus_entries', entries);
     }
 
-    async getEmployees(): Promise<Employee[]> {
-        return this.get<Employee[]>('tempus_employees', []);
+    async getTeams(): Promise<Team[]> {
+        return this.get<Team[]>('tempus_Teams', []);
     }
-    async saveEmployees(employees: Employee[]): Promise<void> {
-        await this.set('tempus_employees', employees);
+    async saveTeams(Teams: Team[]): Promise<void> {
+        await this.set('tempus_Teams', Teams);
     }
 
     async getSettings(): Promise<AppSettings> {

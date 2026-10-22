@@ -11,7 +11,7 @@ interface AppContextType {
     entries: TimeEntry[];
     settings: AppSettings;
     roleColors: Record<RoleType, { bg: string; border: string; text: string }>;
-    addEntry: (employeeId: string, clockIn: string, clockOut: string | null, breakTime: number) => void;
+    addEntry: (TeamId: string, clockIn: string, clockOut: string | null, breakTime: number) => void;
     updateEntry: (id: string, updates: Partial<TimeEntry>) => void;
     deleteEntry: (id: string) => void;
     restoreEntry: (entry: TimeEntry) => void;
@@ -47,11 +47,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
             if (isLoaded && settings) dataStore.saveSettings(settings);
         }, [settings, isLoaded]);
 
-            const addEntry = (employeeId: string, clockIn: string, clockOut: string | null, breakTime: number) => {
+            const addEntry = (TeamId: string, clockIn: string, clockOut: string | null, breakTime: number) => {
                 const totalHours = calculateHours(clockIn, clockOut, breakTime);
                 const newEntry: TimeEntry = {
                     id: crypto.randomUUID(),
-                    employeeId,
+                    TeamId,
                     clockIn,
                     clockOut,
                     breakTime,

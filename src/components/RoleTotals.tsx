@@ -1,20 +1,20 @@
 // src/components/RoleTotals.tsx
 
 import { useAppContext } from '../context/AppContext';
-import { useEmployees } from '../context/EmployeeContext';
+import { useTeams } from '../context/TeamContext';
 
 export default function RoleTotals() {
     const { entries, roleColors } = useAppContext();
-    const { employees } = useEmployees();
+    const { Teams } = useTeams();
     const completedEntries = entries.filter(e => e.clockOut);
 
     const totals: Record<string, number> = {};
 
-    // Group by employee role
+    // Group by Team role
     completedEntries.forEach(entry => {
-        const employee = employees.find(emp => emp.id === entry.employeeId);
-        if (employee) {
-            totals[employee.role] = (totals[employee.role] || 0) + entry.totalHours;
+        const Team = Teams.find(emp => emp.id === entry.TeamId);
+        if (Team) {
+            totals[Team.role] = (totals[Team.role] || 0) + entry.totalHours;
         }
     });
 

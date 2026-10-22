@@ -2,10 +2,10 @@
 
 import { useAppContext } from '../context/AppContext';
 import { calculateHourlyDistribution } from '../utils/calculations';
-import { formatTimeDisplay } from '../utils/time'; // Added
+import { formatTimeDisplay } from '../utils/time';
 
 export default function HourlyChart() {
-    const { entries, settings } = useAppContext(); // Added settings
+    const { entries, settings } = useAppContext();
     const completedEntries = entries.filter(e => e.clockOut);
 
     const hourlyTotals = new Array(24).fill(0);
@@ -35,7 +35,6 @@ export default function HourlyChart() {
             const startHour = i;
             const endHour = (i + 1) % 24;
 
-            // Use our formatter for clean, consistent time periods
             const startTime = `${startHour.toString().padStart(2, '0')}:00`;
             const endTime = `${endHour.toString().padStart(2, '0')}:00`;
 

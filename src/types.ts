@@ -1,20 +1,20 @@
 // src/types.ts
 
 export type RoleType = 'Staff' | 'Temp' | 'Contractor' | 'Other';
-export type EmployeeStatus = 'Active' | 'Inactive';
+export type TeamStatus = 'Active' | 'Inactive';
 
-export interface Employee {
+export interface Team {
     id: string;
     firstName: string;
     lastName?: string;
     role: RoleType;
     baseRate: number;
-    status: EmployeeStatus;
+    status: TeamStatus;
 }
 
 export interface TimeEntry {
     id: string;
-    employeeId: string;
+    TeamId: string;
     clockIn: string;
     clockOut: string | null;
     breakTime: number;

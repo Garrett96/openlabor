@@ -1,31 +1,31 @@
-// src/components/EmployeeSearch.tsx
+// src/components/TeamSearch.tsx
 
 import { useState, useRef, useEffect } from 'react';
-import { Employee } from '../types';
+import { Team } from '../types';
 
-interface EmployeeSearchProps {
-    employees: Employee[];
+interface TeamSearchProps {
+    Teams: Team[];
     value: string;
     onChange: (id: string) => void;
     placeholder?: string;
     onTextChange?: (text: string) => void;
 }
 
-export default function EmployeeSearch({ employees, value, onChange, placeholder, onTextChange }: EmployeeSearchProps) {
+export default function TeamSearch({ Teams, value, onChange, placeholder, onTextChange }: TeamSearchProps) {
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (value) {
-            const emp = employees.find(e => e.id === value);
+            const emp = Teams.find(e => e.id === value);
             if (emp) {
                 setQuery(`${emp.firstName}${emp.lastName ? ' ' + emp.lastName : ''}`);
             }
         } else {
             setQuery('');
         }
-    }, [value, employees]);
+    }, [value, Teams]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -51,7 +51,7 @@ export default function EmployeeSearch({ employees, value, onChange, placeholder
         if (onTextChange) onTextChange(newValue);
     };
 
-        const handleSelect = (emp: Employee) => {
+        const handleSelect = (emp: Team) => {
             const fullName = `${emp.firstName}${emp.lastName ? ' ' + emp.lastName : ''}`;
             setQuery(fullName);
             onChange(emp.id);
@@ -59,8 +59,8 @@ export default function EmployeeSearch({ employees, value, onChange, placeholder
             if (onTextChange) onTextChange(fullName);
         };
 
-            const filteredEmployees = query.trim().length > 0
-            ? employees.filter(emp => {
+            const filteredTeams = query.trim().length > 0
+            ? Teams.filter(emp => {
                 const fullName = `${emp.firstName} ${emp.lastName || ''}`.toLowerCase();
                 return fullName.includes(query.toLowerCase());
             })
@@ -81,7 +81,7 @@ export default function EmployeeSearch({ employees, value, onChange, placeholder
                 />
 
                 {/* dropdown render */}
-                {isOpen && query.trim().length > 0 && filteredEmployees.length > 0 && (
+                {isOpen && query.trim().length > 0 && filteredTeams.length > 0 && (
                     <ul style={{
                         position: 'absolute',
                         top: '100%',
@@ -99,7 +99,7 @@ export default function EmployeeSearch({ employees, value, onChange, placeholder
                         zIndex: 50,
                         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                     }}>
-                    {filteredEmployees.map(emp => (
+                    {filteredTeams.map(emp => (
                         <li
                         key={emp.id}
                         onClick={() => handleSelect(emp)}

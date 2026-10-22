@@ -2,17 +2,17 @@
 
 import { useState, FormEvent } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { useEmployees } from '../context/EmployeeContext';
+import { useTeams } from '../context/TeamContext';
 import { useToast } from '../context/ToastContext';
 import SmartTimeInput from './SmartTimeInput';
-import EmployeeSearch from './EmployeeSearch';
+import TeamSearch from './TeamSearch';
 
 export default function EntryForm() {
     const { addEntry, settings } = useAppContext();
-    const { employees, addEmployee } = useEmployees();
+    const { Teams, addTeam } = useTeams();
     const { showToast } = useToast();
 
-    const [employeeId, setEmployeeId] = useState('');
+    const [TeamId, setTeamId] = useState('');
     const [searchText, setSearchText] = useState('');
     const [clockIn, setClockIn] = useState('');
     const [clockOut, setClockOut] = useState('');
@@ -20,22 +20,22 @@ export default function EntryForm() {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        let finalEmployeeId = employeeId;
+        let finalTeamId = TeamId;
 
-        if (!finalEmployeeId && searchText.trim()) {
+        if (!finalTeamId && searchText.trim()) {
             const parts = searchText.trim().split(/\s+/);
             const firstName = parts[0];
             const lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
 
             const newId = crypto.randomUUID();
-            addEmployee(firstName, lastName, 'Temp', settings.defaultBaseRate, newId);
-            finalEmployeeId = newId;
+            addTeam(firstName, lastName, 'Temp', settings.defaultBaseRate, newId);
+            finalTeamId = newId;
 
             const fullName = lastName ? `${firstName} ${lastName}` : firstName;
             showToast(`Added ${fullName} to roster`, 'success');
         }
 
-        if (!finalEmployeeId) {
+        if (!finalTeamId) {
             showToast('Please select or type a name', 'error');
             return;
         }
@@ -44,9 +44,9 @@ export default function EntryForm() {
             return;
         }
 
-        addEntry(finalEmployeeId, clockIn, clockOut || null, breakTime);
+        addEntry(finalTeamId, clockIn, clockOut || null, breakTime);
 
-        setEmployeeId('');
+        setTeamId('');
         setSearchText('');
         setClockIn('');
         setClockOut('');
@@ -59,10 +59,10 @@ export default function EntryForm() {
         <form id="timeEntryForm" onSubmit={handleSubmit}>
         <div className="form-group">
         <label>Name</label>
-        <EmployeeSearch
-        employees={employees}
-        value={employeeId}
-        onChange={setEmployeeId}
+        <TeamSearch
+        Teams={Teams}
+        value={TeamId}
+        onChange={setTeamId}
         onTextChange={setSearchText}
         placeholder="Type name to search or add new..."
         />
