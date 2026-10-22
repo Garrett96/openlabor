@@ -1,6 +1,6 @@
 // src/components/EntryForm.tsx
 
-import { useState, FormEvent } from 'react';
+import { useState, useRef, FormEvent } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useTeams } from '../context/TeamContext';
 import { useToast } from '../context/ToastContext';
@@ -18,14 +18,14 @@ export default function EntryForm() {
     const [clockOut, setClockOut] = useState('');
     const [breakTime, setBreakTime] = useState(0);
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const isSubmittingRef = useRef(false);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
 
-        if (isSubmitting) return;
+        if (isSubmittingRef.current) return;
 
-        setIsSubmitting(true);
+        isSubmittingRef.current = true;
 
         let finalTeamId = TeamId;
 
@@ -44,12 +44,12 @@ export default function EntryForm() {
 
         if (!finalTeamId) {
             showToast('Please select or type a name', 'error');
-            setIsSubmitting(false);
+            isSubmittingRef.current = false;
             return;
         }
         if (!clockIn) {
             showToast('Clock In is required', 'error');
-            setIsSubmitting(false);
+            isSubmittingRef.current = false;
             return;
         }
 
@@ -61,7 +61,7 @@ export default function EntryForm() {
         setClockOut('');
         setBreakTime(0);
 
-        setIsSubmitting(false);
+        isSubmittingRef.current = false;
     };
 
     return (
