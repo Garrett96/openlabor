@@ -1,6 +1,6 @@
 // src/components/TeamManager.tsx
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTeams } from '../context/TeamContext';
 import { useToast } from '../context/ToastContext';
 import { useAppContext } from '../context/AppContext';
