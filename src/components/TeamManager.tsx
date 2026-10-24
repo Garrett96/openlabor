@@ -48,6 +48,69 @@ export default function TeamManager() {
         setLastName('');
     };
 
+    const handleExport = () => {
+        const exportData = {
+            version: '1.0',
+            exportDate: new Date().toISOString(),
+            teamMembers: Teams.map(t => ({
+                id: t.id,
+                firstName: t.firstName,
+                lastName: t.lastName,
+                role: t.role,
+                baseRate: t.baseRate
+            }))
+        };
+
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `openlabor-roster-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast(`Exported ${Teams.length} team members`, 'success');
+    };
+
+    const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = JSON.parse(event.target?.result as string);
+
+                if (!data.teamMembers || !Array.isArray(data.teamMembers)) {
+                    showToast('Invalid file format', 'error');
+                    return;
+                }
+
+                const validMembers = data.teamMembers.filter((m: any) =>
+                m.id && m.firstName && m.role && typeof m.baseRate === 'number'
+                );
+
+                if (validMembers.length === 0) {
+                    showToast('No valid team members found in file', 'error');
+                    return;
+                }
+
+                validMembers.forEach((m: any) => {
+                    addTeam(m.firstName, m.lastName || '', m.role, m.baseRate, m.id);
+                });
+
+                showToast(`Imported ${validMembers.length} team members`, 'success');
+            } catch (error) {
+                showToast('Failed to parse file', 'error');
+            }
+        };
+        reader.readAsText(file);
+
+        e.target.value = '';
+    };
+
     const sortedTeams = [...Teams].sort((a, b) => {
         if (sortOrder === 'none') return 0;
 
@@ -62,6 +125,35 @@ export default function TeamManager() {
     return (
         <section className="cost-config-section">
         <h2>Team Registry</h2>
+
+        return (
+            <section className="cost-config-section">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h2 style={{ margin: 0 }}>Team Registry</h2>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+            className="btn btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+            onClick={handleExport}
+            >
+            Export Roster
+            </button>
+            <label
+            className="btn btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '0.85rem', cursor: 'pointer', margin: 0 }}
+            >
+            Import Roster
+            <input
+            type="file"
+            accept=".json"
+            onChange={handleImport}
+            style={{ display: 'none' }}
+            />
+            </label>
+            </div>
+            </div>
+
+            {/* Rest of your component... */}
 
         {/* Add Team Form */}
         <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem', alignItems: 'end' }}>
