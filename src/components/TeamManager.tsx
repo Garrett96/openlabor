@@ -1,6 +1,6 @@
 // src/components/TeamManager.tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTeams } from '../context/TeamContext';
 import { useToast } from '../context/ToastContext';
 import { useAppContext } from '../context/AppContext';
@@ -124,36 +124,30 @@ export default function TeamManager() {
 
     return (
         <section className="cost-config-section">
-        <h2>Team Registry</h2>
-
-        return (
-            <section className="cost-config-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 style={{ margin: 0 }}>Team Registry</h2>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-            className="btn btn-secondary"
-            style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-            onClick={handleExport}
-            >
-            Export Roster
-            </button>
-            <label
-            className="btn btn-secondary"
-            style={{ padding: '6px 12px', fontSize: '0.85rem', cursor: 'pointer', margin: 0 }}
-            >
-            Import Roster
-            <input
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            style={{ display: 'none' }}
-            />
-            </label>
-            </div>
-            </div>
-
-            {/* Rest of your component... */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h2 style={{ margin: 0 }}>Team Registry</h2>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button
+        className="btn btn-secondary"
+        style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+        onClick={handleExport}
+        >
+        Export Roster
+        </button>
+        <label
+        className="btn btn-secondary"
+        style={{ padding: '6px 12px', fontSize: '0.85rem', cursor: 'pointer', margin: 0 }}
+        >
+        Import Roster
+        <input
+        type="file"
+        accept=".json"
+        onChange={handleImport}
+        style={{ display: 'none' }}
+        />
+        </label>
+        </div>
+        </div>
 
         {/* Add Team Form */}
         <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1.5rem', alignItems: 'end' }}>
@@ -175,13 +169,13 @@ export default function TeamManager() {
         <label>Base Rate ($/hr)</label>
         <input type="number" min="0" step="0.50" value={baseRate} onChange={handleBaseRateChange} />
         </div>
-        <button type="submit" className="btn">Add Entry</button>
+        <button type="submit" className="btn">Add Team Member</button>
         </form>
 
         {/* Sort Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
         <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 500 }}>
-        {Teams.length} Total
+        Total: {Teams.length}
         </span>
         <button
         className="btn btn-secondary"
@@ -199,20 +193,20 @@ export default function TeamManager() {
         {/* Team List with Quick Role Swap */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {Teams.length === 0 ? (
-            <p style={{ color: '#666', fontStyle: 'italic' }}>No team members added.</p>
+            <p style={{ color: '#666', fontStyle: 'italic' }}>No team members added yet.</p>
         ) : (
-            sortedTeams.map(emp => (
-                <div key={emp.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px' }}>
+            sortedTeams.map(team => (
+                <div key={team.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                <strong>{emp.firstName}{emp.lastName ? ` ${emp.lastName}` : ''}</strong>
+                <strong>{team.firstName}{team.lastName ? ` ${team.lastName}` : ''}</strong>
 
                 {/* INLINE ROLE EDITOR */}
-                {editingRoleId === emp.id ? (
+                {editingRoleId === team.id ? (
                     <select
                     autoFocus
-                    value={emp.role}
+                    value={team.role}
                     onChange={(e) => {
-                        updateTeam(emp.id, { role: e.target.value as RoleType });
+                        updateTeam(team.id, { role: e.target.value as RoleType });
                         setEditingRoleId(null);
                     }}
                     onBlur={() => setEditingRoleId(null)}
@@ -222,11 +216,11 @@ export default function TeamManager() {
                     </select>
                 ) : (
                     <span
-                    onClick={() => setEditingRoleId(emp.id)}
+                    onClick={() => setEditingRoleId(team.id)}
                     style={{ marginLeft: '10px', fontSize: '0.85rem', color: '#666', cursor: 'pointer', textDecoration: 'underline dotted', textDecorationColor: '#aaa' }}
                     title="Click to change role"
                     >
-                    {emp.role}
+                    {team.role}
                     </span>
                 )}
                 </div>
@@ -237,8 +231,8 @@ export default function TeamManager() {
                 <input
                 type="number"
                 style={{ width: '70px', padding: '4px 8px' }}
-                value={emp.baseRate}
-                onChange={e => updateTeam(emp.id, { baseRate: Number(e.target.value) })}
+                value={team.baseRate}
+                onChange={e => updateTeam(team.id, { baseRate: Number(e.target.value) })}
                 />
                 <span style={{ fontSize: '0.85rem', color: '#666' }}>/hr</span>
                 </div>
@@ -246,10 +240,10 @@ export default function TeamManager() {
                 className="delete-btn"
                 style={{ padding: '4px 8px', fontSize: '0.8rem' }}
                 onClick={() => {
-                    deleteTeam(emp.id);
-                    showToast(`${emp.firstName} ${emp.lastName} removed`, 'error', true, () => {
-                    addTeam(emp.firstName, emp.lastName || '', emp.role, emp.baseRate, emp.id);
-                    showToast(`${emp.firstName} ${emp.lastName} restored`, 'success');
+                    deleteTeam(team.id);
+                    showToast(`${team.firstName} ${team.lastName} removed`, 'error', true, () => {
+                        addTeam(team.firstName, team.lastName || '', team.role, team.baseRate, team.id);
+                        showToast(`${team.firstName} ${team.lastName} restored`, 'success');
                     });
                 }}
                 >
